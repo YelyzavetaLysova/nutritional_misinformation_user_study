@@ -52,6 +52,67 @@ python run.py
 
 The application will be available at http://localhost:8000
 
+## Deployment
+
+### Server Requirements
+
+- Python 3.8+
+- Web server (e.g., Nginx)
+- WSGI server (e.g., Gunicorn)
+- HTTPS certificate (recommended for production)
+
+### Deployment Steps
+
+1. Clone the repository on your server:
+   ```
+   git clone https://github.com/yourusername/nutritional_misinformation_user_study.git
+   cd nutritional_misinformation_user_study
+   ```
+
+2. Create a virtual environment and install dependencies:
+   ```
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+
+3. Configure the web server (Nginx example):
+   ```
+   server {
+       listen 80;
+       server_name your-domain.com;
+       
+       location / {
+           proxy_pass http://localhost:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+       }
+   }
+   ```
+
+4. Set up a systemd service to run the application:
+   ```
+   [Unit]
+   Description=Nutritional Misinformation Survey
+   After=network.target
+
+   [Service]
+   User=your-username
+   Group=your-group
+   WorkingDirectory=/path/to/nutritional_misinformation_user_study
+   ExecStart=/path/to/nutritional_misinformation_user_study/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker run:app
+   Restart=always
+
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+5. Start and enable the service:
+   ```
+   sudo systemctl start nutritional-survey
+   sudo systemctl enable nutritional-survey
+   ```
+
 ## Data Structure
 
 ### Input Data

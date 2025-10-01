@@ -1,6 +1,9 @@
 import uvicorn
 from app.main import app
 
+# This allows both direct execution with uvicorn (for development)
+# and deployment with Gunicorn (for production)
+
 if __name__ == "__main__":
     # Run the application with uvicorn
     # Host 0.0.0.0 makes it accessible from other devices on your network

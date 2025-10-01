@@ -14,6 +14,10 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
+# Ensure directories exist
+os.makedirs("logs", exist_ok=True)
+os.makedirs("data/responses", exist_ok=True)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
