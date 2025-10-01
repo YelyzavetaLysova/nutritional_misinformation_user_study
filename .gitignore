@@ -27,11 +27,12 @@ ENV/
 env/
 
 # Logs
-logs/
-*.log
+logs/*.log
 
 # Local data
-data/responses/
+data/responses/*.json
+data/responses/*.csv
+!data/recipes.csv
 
 # IDE specific files
 .idea/
