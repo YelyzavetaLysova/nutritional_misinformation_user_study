@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Survey Study</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body>
+    <div class="mobile-container">
+        <header>
+            <h1>Recipe Survey Study</h1>
+        </header>
+        <main>
+            <section class="intro">
+                <h2>Welcome to Our Study!</h2>
+                <p>Thank you for participating in our research on recipe preferences and perceptions. Your input is valuable to our study on nutritional understanding.</p>
+                
+                <h3>What You'll Do:</h3>
+                <ol>
+                    <li>Answer a few demographic questions</li>
+                    <li>Review and evaluate 5 different recipes</li>
+                    <li>Answer some final questions about your experience</li>
+                    <li>Read a brief debriefing about the study</li>
+                </ol>
+                
+                <p>The entire study will take approximately 10-15 minutes to complete.</p>
+                
+                <h3>Consent to Participate</h3>
+                <p>By proceeding with this study, you agree that:</p>
+                <ul>
+                    <li>Your participation is voluntary</li>
+                    <li>You can withdraw at any time</li>
+                    <li>Your data will be collected anonymously</li>
+                    <li>Your responses will be used for research purposes only</li>
+                </ul>
+            </section>
+            
+            <form action="/start" method="post" class="action-form">
+                <div class="form-group">
+                    <input type="checkbox" id="consent" name="consent" required>
+                    <label for="consent">I have read and understood the information above and consent to participate in this study</label>
+                </div>
+                <button type="submit" class="btn-primary">Start Survey</button>
+            </form>
+        </main>
+        <footer>
+            <p>© 2025 Nutritional Misinformation Study</p>
+        </footer>
+    </div>
+</body>
+</html>
