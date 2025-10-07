@@ -11,8 +11,22 @@ if [[ ! -f "$SSH_KEY_FILE" ]]; then
   exit 1
 fi
 
+# Check which username works
+echo "Testing SSH connection..."
+for user in ubuntu ubuntu-server admin administrator root liza yelyzavetalysova lizal; do
+  if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -i "$SSH_KEY_FILE" $user@158.39.74.209 "echo 'SSH connection successful'" &>/dev/null; then
+    SSH_USER=$user
+    break
+  fi
+done
+
+if [ -z "$SSH_USER" ]; then
+  echo "SSH connection failed with all attempted usernames. Please check your SSH key and server configuration."
+  exit 1
+fi
+
 # Run the update commands on the server
-ssh -i "$SSH_KEY_FILE" ubuntu@10.1.1.140 'bash -s' << 'EOF'
+ssh -i "$SSH_KEY_FILE" ${SSH_USER}@158.39.74.209 'bash -s' << 'EOF'
   cd ~/nutritional_misinformation_user_study
   
   # Pull the latest changes from GitHub

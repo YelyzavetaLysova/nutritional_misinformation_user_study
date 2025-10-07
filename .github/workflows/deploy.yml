@@ -19,11 +19,23 @@ jobs:
     - name: Add server to known hosts
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan -H 10.1.1.140 >> ~/.ssh/known_hosts
+        ssh-keyscan -H 158.39.74.209 >> ~/.ssh/known_hosts
+        
+    - name: Find working username
+      id: find_user
+      run: |
+        for user in ubuntu ubuntu-server admin administrator root liza yelyzavetalysova lizal; do
+          if ssh -o StrictHostKeyChecking=accept-new -o ConnectTimeout=5 $user@158.39.74.209 "echo 'Connected as $user'" 2>/dev/null; then
+            echo "username=$user" >> $GITHUB_OUTPUT
+            break
+          fi
+        done
         
     - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=accept-new ubuntu@10.1.1.140 'bash -s' << 'EOT'
+        SSH_USER="${{ steps.find_user.outputs.username || 'ubuntu' }}"
+        echo "Deploying using username: $SSH_USER"
+        ssh -o StrictHostKeyChecking=accept-new $SSH_USER@158.39.74.209 'bash -s' << 'EOT'
           # Stop the service
           sudo systemctl stop nutritional-survey || true
           
@@ -71,7 +83,7 @@ EOF'
             sudo bash -c 'cat > /etc/nginx/sites-available/nutritional-survey << EOF
 server {
     listen 80;
-    server_name 10.1.1.140;
+    server_name 158.39.74.209;
 
     location / {
         proxy_pass http://127.0.0.1:8000;

@@ -3,49 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recipe Survey Study</title>
+    <title>Recipe Feasibility Study</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
 </head>
 <body>
     <div class="mobile-container">
         <header>
-            <h1>Recipe Survey Study</h1>
+            <h1>Study on Recipe Feasibility</h1>
         </header>
         <main>
-            <section class="intro">
-                <h2>Welcome to Our Study!</h2>
-                <p>Thank you for participating in our research on recipe preferences and perceptions. Your input is valuable to our study on nutritional understanding.</p>
+            
+            <p class="intro-text">Dear participant,</p>
+            
+            <p>Thank you for taking the time to participate in this study. Before starting, please read the information below carefully. If anything is unclear, you are welcome to contact the research team.</p>
+            
+            <p>This research is conducted at <strong>SFI MediaFutures: Research Centre for Responsible Media Technology & Innovation</strong> at the University of Bergen, Norway:</p>
+            <ul class="researcher-list">
+                <li><strong>Yelyzaveta Lysova</strong> – <a href="mailto:y.lysova@student.uib.no">y.lysova@student.uib.no</a></li>
+            </ul>
+            
+            <p>The study is carried out under the supervision of:</p>
+            <ul class="researcher-list">
+                <li><strong>Prof. Dr. Christoph Trattner</strong> – University of Bergen (<a href="mailto:christoph.trattner@uib.no">christoph.trattner@uib.no</a>)</li>
+                <li><strong>Assoc. Prof. II Alain Starke</strong> – University of Bergen (<a href="mailto:alain.starke@uib.no">alain.starke@uib.no</a>)</li>
+            </ul>
+            
+            <div class="study-details">
+                <h3>1) Purpose of the Study</h3>
+                <p>This study investigates how users perceive and evaluate recipes in terms of feasibility, attractiveness, and correctness.</p>
                 
-                <h3>What You'll Do:</h3>
-                <ol>
-                    <li>Answer a few demographic questions</li>
-                    <li>Review and evaluate 5 different recipes</li>
-                    <li>Answer some final questions about your experience</li>
-                    <li>Read a brief debriefing about the study</li>
-                </ol>
+                <h3>2) What Will You Be Asked to Do?</h3>
+                <p>You will be asked to review five different recipes and evaluate each one. 
+                   You will be also asked to answer a few short questionnaires. The study takes approximately 10 minutes. 
+                    There are no known risks or discomforts involved.</p>
                 
-                <p>The entire study will take approximately 10-15 minutes to complete.</p>
-                
-                <h3>Consent to Participate</h3>
-                <p>By proceeding with this study, you agree that:</p>
-                <ul>
-                    <li>Your participation is voluntary</li>
-                    <li>You can withdraw at any time</li>
-                    <li>Your data will be collected anonymously</li>
-                    <li>Your responses will be used for research purposes only</li>
+                <h3>4) Data Privacy and Your Rights</h3>
+                <ul class="privacy-list">
+                    <li>Your participation is voluntary and you may withdraw at any time without giving a reason.</li>
+                    <li>All personal data will be kept confidential and used only for the purposes of this study. Further processing of anonymized data may occur if it aligns with the study's goals. Any data shared with other researchers or published will be fully anonymized and untraceable to you.</li>
                 </ul>
-            </section>
+            </div>
+            
+            <div class="disclaimer">
+                <p><strong>Disclaimer:</strong> Please refrain from using your browser's Back button during the study. Navigating backward can cause data loss and incomplete submissions, which may impact your compensation.</p>
+            </div>
+            
+            <p class="consent-notice">By clicking the button below, you confirm that you have read this information and voluntarily agree to participate in the study.</p>
             
             <form action="/start" method="post" class="action-form">
-                <div class="form-group">
+                <div class="form-group blue-consent">
                     <input type="checkbox" id="consent" name="consent" required>
-                    <label for="consent">I have read and understood the information above and consent to participate in this study</label>
+                    <label for="consent">I agree to participate in the study</label>
                 </div>
-                <button type="submit" class="btn-primary">Start Survey</button>
+                <button type="submit" class="btn-primary">Start the Study</button>
             </form>
         </main>
         <footer>
-            <p>© 2025 Nutritional Misinformation Study</p>
+            <p>© 2025 SFI MediaFutures - Recipe Feasibility Study</p>
         </footer>
     </div>
 </body>

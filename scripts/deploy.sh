@@ -1,59 +1,44 @@
 #!/bin/zsh
 # Deployment script for nutritional_misinformation_user_study
 
-echo "Starting deployment to server at 10.1.1.140..."
+echo "Starting deployment to server at 158.39.74.209..."
 
 # Ensure we're in the right directory
 cd "$(dirname "$0")" || exit
 cd ..
 
-# Check if the SSH key file exists
-SSH_KEY_FILE="$HOME/.ssh/nrec_key"
-if [[ ! -f "$SSH_KEY_FILE" ]]; then
-  echo "Creating SSH key file at $SSH_KEY_FILE..."
-  cat > "$SSH_KEY_FILE" << 'EOF'
------BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEA2rnn1BiAR9FcrU51f5JKlEW6M4OdfAN2IWl8yrPbjm0tZvgl
-h2EuyJct9W0sQhzLotcU4H3e8/ryZ89G9Ll8wJ0zGLoZk1dUJhmclgpvfvLlu+WW
-be+ExBCOocYSZZRMN0HSEK6Sqsjue1b6MsjUVSKansVibwhjaLmRSvW7tT9E/9WJ
-sMe+JdAfS7A4UQziwa8o71dfyX2gM7BxKhiCTiXR7nQD/hZnk+W6nrOc74N2RDYH
-rb8FqfLqYp8Os4z/4uc36aTre9rSX6tOW4fSVliQ8z1cOJYKJKuwm8A/Zj9G1Sq+
-PYVBNxdUgQnadbXNap7HSDYQM5JQiaMmudVJZQIDAQABAoIBAFKm34jRPWBmJ+xB
-crsjT9VZx/QBbzhWooQbtZFvh675aKe5a40N1zzri+1rNMdC1FyThAsU5XQyxvkd
-ZYXCtfafMJjOci2wWVcQZJB6HwnMxa1MI50lXnksfIl7LKZ/9JEI6VVucnPg++VV
-x7P7GemV6vHGSt0EQXRocxPtaeIh9D3qLGcTGK/k5gDIKoDTVbjTSWDhqyL04ec+
-izkfqp+I9UVaDea7b/bHl5OwdsYiRmKGHVeHnmfbABQF4FKm0x08L95MNUm1fkvA
-LFsoWB048yxNV4Vkos7xa45QzOuIsLCoBRE3CvmylntsMVokUbnM4ngI5TkvqIj2
-askeqoECgYEA/Gxwu96xP8S6C/YXH+t05wAN5kW61JnvIMbXSjMVYZm+mk3gLaqd
-IoXlOEvlyMu9xKBTaKSlWsU+qUKcsYh1G7ZdyFjpVywL2qcuUmvwbKWmkeazB2lW
-Hjsw1dmwttAi3NwZDlt/1Up1XNQA6xRS7/ZR+W/W9BRMOcb3xTC9i8UCgYEA3dM9
-/Ci/5urK37M6aQ6LsUIROLjzDNLmyQVqFGerXl
-07+aeCdVVC/A0p0hpupQV7EboviAxFUCP/N4jwMqIXq/+6d7IXknYxZd8EPE5ayb
-qPxOtcvjmKgTkGOCOrmv51uw76vm4EmXNz2YgSECgYEAnniV7dxI+vfOtWOx8OAp
-bDykfUSZno9liPZMgtC/Q576AnWRoBnUvK/C0C0V/ZGreZ4Nv0xeYzYhuLGRHgPF
-Qbij9/uZwphseMEsW6JYNl1ozYBANQ70edY/OoKIZr0UpgOn11OqVYWBWN3gFbWU
-vAGwRSDpmiKEGGHJe4q19OECgYB5kcTfLIwoshzysEcSKzJ8YxxilDEOwlpPuPBU
-yMDsDLRMKAMfIYQRxLAeajcskxR6OegsBU0V3pCgI8+sXZtMzAueE51O0pxXfTNP
-cxK2ZgiX8pr2w1HzBV/1qRNwkuN87/0bPrOwZH5mcm7Oagq8PnnN9O1iXLaaYxpx
-lttWoQKBgQD13hAqsgQAXXgO2jRbQ3X0LptPPu8tjNRS5F1IN2C3dAOxG7NU5LLD
-J38d+w1V4u9d9t4sigYjemQF5G4IeQ2S++PC8Gl5bUhhVyH/Byn/p2beWNgqvnUr
-gg4cx5jRCi5yYE5CzzBvnQVhyzBLlPmo0KxmOozYsMZ15SuvDDf5sw==
------END RSA PRIVATE KEY-----
-EOF
-  chmod 600 "$SSH_KEY_FILE"
-  echo "SSH key file created."
-fi
+# Set the SSH key file to use the fixed key
+SSH_KEY_FILE="$(pwd)/fixed_key.pem"
+echo "Using SSH key file at $SSH_KEY_FILE"
+chmod 600 "$SSH_KEY_FILE"
 
 # Add the server to known_hosts if it's not already there
-if ! ssh-keygen -F 10.1.1.140 > /dev/null; then
+if ! ssh-keygen -F 158.39.74.209 > /dev/null; then
   echo "Adding server to known_hosts..."
-  ssh-keyscan -H 10.1.1.140 >> ~/.ssh/known_hosts
+  ssh-keyscan -H 158.39.74.209 >> ~/.ssh/known_hosts
 fi
 
 # Test SSH connection
 echo "Testing SSH connection..."
-if ! ssh -i "$SSH_KEY_FILE" ubuntu@10.1.1.140 "echo 'SSH connection successful'"; then
-  echo "SSH connection failed. Please check your SSH key and server configuration."
+# Try to connect with the most common cloud instance username
+SSH_USER="ubuntu"
+echo "Trying to connect as $SSH_USER..."
+if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i "$SSH_KEY_FILE" $SSH_USER@158.39.74.209 "echo 'SSH connection successful as $SSH_USER'"; then
+  echo "Connection successful as $SSH_USER!"
+else
+  echo "Failed to connect as $SSH_USER, trying alternative usernames..."
+  for user in azureuser admin root liza yelyzavetalysova lizal ubuntu-server; do
+    echo "Trying to connect as $user..."
+    if ssh -o ConnectTimeout=5 -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -i "$SSH_KEY_FILE" $user@158.39.74.209 "echo 'SSH connection successful as $user'"; then
+      echo "Connection successful as $user!"
+      SSH_USER=$user
+      break
+    fi
+  done
+fi
+
+if [ -z "$SSH_USER" ]; then
+  echo "SSH connection failed with all attempted usernames. Please check your SSH key and server configuration."
   exit 1
 fi
 
@@ -62,11 +47,11 @@ echo "Deploying application files..."
 rsync -avz --exclude 'venv' --exclude '.git' --exclude '__pycache__' --exclude 'logs/*.log' \
   --exclude 'data/responses/*.json' --exclude 'data/responses/*.csv' \
   -e "ssh -i $SSH_KEY_FILE" \
-  ./ ubuntu@10.1.1.140:~/nutritional_misinformation_user_study/
+  ./ ${SSH_USER}@158.39.74.209:~/nutritional_misinformation_user_study/
 
 # Run the remote setup script
 echo "Setting up application on the server..."
-ssh -i "$SSH_KEY_FILE" ubuntu@10.1.1.140 'bash -s' << 'EOF'
+ssh -i "$SSH_KEY_FILE" ${SSH_USER}@158.39.74.209 'bash -s' << 'EOF'
   cd ~/nutritional_misinformation_user_study
   
   # Create Python virtual environment if it doesn't exist
@@ -111,7 +96,7 @@ EOT'
     sudo bash -c 'cat > /etc/nginx/sites-available/nutritional-survey << EOT
 server {
     listen 80;
-    server_name 10.1.1.140;
+    server_name 158.39.74.209;
 
     location / {
         proxy_pass http://127.0.0.1:8000;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demographics - Recipe Survey</title>
+    <title>Demographics - Recipe Feasibility Study</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
 </head>
 <body>
@@ -19,7 +19,7 @@
             
             <form action="/demographics" method="post" class="survey-form">
                 <div class="form-group">
-                    <label for="age">Age Range:</label>
+                    <label for="age">Age:</label>
                     <select id="age" name="age" required>
                         <option value="" selected disabled>Select your age range</option>
                         <option value="18-24">18-24</option>
@@ -38,8 +38,7 @@
                         <option value="" selected disabled>Select your gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
-                        <option value="non_binary">Non-binary/Third gender</option>
-                        <option value="self_describe">Prefer to self-describe</option>
+                        <option value="non_binary">Non-binary</option>
                         <option value="prefer_not_to_say">Prefer not to say</option>
                     </select>
                 </div>
@@ -58,15 +57,12 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="cooking_frequency">How often do you cook meals at home?</label>
-                    <select id="cooking_frequency" name="cooking_frequency" required>
-                        <option value="" selected disabled>Select an option</option>
-                        <option value="daily">Daily</option>
-                        <option value="several_times_week">Several times a week</option>
-                        <option value="once_week">About once a week</option>
-                        <option value="few_times_month">A few times a month</option>
-                        <option value="rarely">Rarely</option>
-                        <option value="never">Never</option>
+                    <label for="nationality">Which country do you live in?</label>
+                    <select id="nationality" name="nationality" required>
+                        <option value="" selected disabled>Select your country</option>
+                        <option value="us">US</option>
+                        <option value="uk">UK</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
                     </select>
                 </div>
                 
@@ -74,7 +70,7 @@
             </form>
         </main>
         <footer>
-            <p>© 2025 Nutritional Misinformation Study</p>
+            <p>© 2025 Recipe Feasibility Study</p>
         </footer>
     </div>
 </body>
