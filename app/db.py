@@ -116,6 +116,9 @@ def save_participant(participant_data: Dict[str, Any]):
         demographics = participant_data.get("responses", {}).get("demographics", {})
         prolific_info = participant_data.get("responses", {}).get("prolific_info", {})
         
+        # Debug logging for Prolific info
+        logger.info(f"Saving participant {participant_id} with Prolific info: {prolific_info}")
+        
         # Insert or update participant data
         if existing:
             cursor.execute("""

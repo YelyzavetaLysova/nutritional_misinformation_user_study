@@ -280,13 +280,47 @@ def create_new_participant() -> Participant:
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
     """Homepage with study information and consent form."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    # Capture Prolific parameters if present
+    prolific_pid = request.query_params.get("PROLIFIC_PID")
+    study_id = request.query_params.get("STUDY_ID")
+    session_id = request.query_params.get("SESSION_ID")
+    
+    # Store Prolific parameters in template context
+    context = {
+        "request": request,
+        "prolific_pid": prolific_pid,
+        "study_id": study_id,
+        "session_id": session_id
+    }
+    
+    return templates.TemplateResponse("index.html", context)
 
 
 @app.post("/start")
-async def start_survey(request: Request):
+async def start_survey(
+    request: Request,
+    prolific_pid: str = Form(None),
+    study_id: str = Form(None),
+    session_id: str = Form(None)
+):
     """Initialize a new participant session."""
+    # Debug logging for Prolific parameters
+    logger.info(f"Prolific parameters received: PID={prolific_pid}, STUDY_ID={study_id}, SESSION_ID={session_id}")
+    
     participant = create_new_participant()
+    
+    # Store Prolific information if provided
+    if prolific_pid:
+        participant.responses["prolific_info"] = {
+            "prolific_pid": prolific_pid,
+            "study_id": study_id,
+            "session_id": session_id
+        }
+        logger.info(f"Starting survey with Prolific participant {prolific_pid}")
+        logger.info(f"Prolific info stored: {participant.responses['prolific_info']}")
+    else:
+        logger.info("No Prolific parameters - regular participant")
+    
     request.session["participant_id"] = participant.id
     logger.info(f"Starting survey with participant {participant.id}")
     return RedirectResponse(url="/demographics", status_code=303)
@@ -508,7 +542,36 @@ async def debriefing(request: Request, participant: Participant = Depends(get_pa
     
     logger.info(f"Participant {participant.id} completed the study")
     
-    return templates.TemplateResponse("debriefing.html", {"request": request})
+    # Check if this is a Prolific participant
+    prolific_info = participant.responses.get("prolific_info")
+    context = {
+        "request": request,
+        "is_prolific": prolific_info is not None,
+        "prolific_pid": prolific_info.get("prolific_pid") if prolific_info else None
+    }
+    
+    return templates.TemplateResponse("debriefing.html", context)
+
+
+@app.get("/complete")
+async def complete_study(request: Request, participant: Participant = Depends(get_participant_from_session)):
+    """Redirect to Prolific completion URL."""
+    if not participant:
+        return RedirectResponse(url="/", status_code=303)
+    
+    if not participant.completed:
+        return RedirectResponse(url=f"/{REQUIRED_STEPS[participant.current_step]}", status_code=303)
+    
+    # Use the configured Prolific completion URL
+    try:
+        from prolific_config import PROLIFIC_COMPLETION_URL
+        completion_url = PROLIFIC_COMPLETION_URL
+    except ImportError:
+        completion_url = "https://app.prolific.co/submissions/complete?cc=C12345AB"
+    
+    logger.info(f"Redirecting participant {participant.id} to Prolific completion")
+    
+    return RedirectResponse(url=completion_url, status_code=303)
 
 
 def save_participant_responses(participant: Participant):
