@@ -7,10 +7,9 @@ echo "Starting deployment to server at 158.39.74.209..."
 cd "$(dirname "$0")" || exit
 cd ..
 
-# Set the SSH key file to use the fixed key
-SSH_KEY_FILE="$(pwd)/fixed_key.pem"
+# Set the SSH key file to use NREC key
+SSH_KEY_FILE="$HOME/.ssh/nrec_key"
 echo "Using SSH key file at $SSH_KEY_FILE"
-chmod 600 "$SSH_KEY_FILE"
 
 # Add the server to known_hosts if it's not already there
 if ! ssh-keygen -F 158.39.74.209 > /dev/null; then

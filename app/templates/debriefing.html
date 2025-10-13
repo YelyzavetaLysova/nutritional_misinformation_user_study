@@ -31,7 +31,7 @@
                 <div class="contact-info">
                     <h3>Questions or Concerns?</h3>
                     <p>If you have any questions about this study or would like to learn more about the results once they are available, please contact the research team at:</p>
-                    <p><strong>Email:</strong> yelys8402@uib.no</p>
+                    <p><strong>Email:</strong> y.lysova@student.uib.no</p>
                 </div>
                 
                 <div class="thank-you">
@@ -41,7 +41,12 @@
             </section>
             
             <div class="action-buttons">
+                {% if is_prolific %}
+                <a href="/complete" class="btn-primary">Complete Study & Return to Prolific</a>
+                <p class="prolific-note">Click the button above to receive your payment on Prolific.</p>
+                {% else %}
                 <a href="/" class="btn-secondary">Return to Homepage</a>
+                {% endif %}
             </div>
         </main>
         <footer>

@@ -51,6 +51,17 @@
             <p class="consent-notice">By clicking the button below, you confirm that you have read this information and voluntarily agree to participate in the study.</p>
             
             <form action="/start" method="post" class="action-form">
+                <!-- Hidden fields for Prolific parameters -->
+                {% if prolific_pid %}
+                <input type="hidden" name="prolific_pid" value="{{ prolific_pid }}">
+                {% endif %}
+                {% if study_id %}
+                <input type="hidden" name="study_id" value="{{ study_id }}">
+                {% endif %}
+                {% if session_id %}
+                <input type="hidden" name="session_id" value="{{ session_id }}">
+                {% endif %}
+                
                 <div class="form-group blue-consent">
                     <input type="checkbox" id="consent" name="consent" required>
                     <label for="consent">I agree to participate in the study</label>

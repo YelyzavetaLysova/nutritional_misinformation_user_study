@@ -29,6 +29,9 @@ def init_db():
     cursor.executescript("""
     CREATE TABLE IF NOT EXISTS participants (
         participant_id TEXT PRIMARY KEY,
+        prolific_pid TEXT,
+        study_id TEXT,
+        session_id TEXT,
         start_time TEXT,
         completed_time TEXT,
         completed BOOLEAN,
@@ -109,13 +112,17 @@ def save_participant(participant_data: Dict[str, Any]):
             except Exception as e:
                 logger.warning(f"Could not calculate time spent: {e}")
         
-        # Get demographics
+        # Get demographics and Prolific info
         demographics = participant_data.get("responses", {}).get("demographics", {})
+        prolific_info = participant_data.get("responses", {}).get("prolific_info", {})
         
         # Insert or update participant data
         if existing:
             cursor.execute("""
             UPDATE participants SET 
+                prolific_pid = ?,
+                study_id = ?,
+                session_id = ?,
                 start_time = ?,
                 completed_time = ?,
                 completed = ?,
@@ -126,6 +133,9 @@ def save_participant(participant_data: Dict[str, Any]):
                 nationality = ?
             WHERE participant_id = ?
             """, (
+                prolific_info.get("prolific_pid"),
+                prolific_info.get("study_id"),
+                prolific_info.get("session_id"),
                 start_time,
                 completed_time,
                 participant_data.get("completed", False),
@@ -140,11 +150,14 @@ def save_participant(participant_data: Dict[str, Any]):
         else:
             cursor.execute("""
             INSERT INTO participants 
-            (participant_id, start_time, completed_time, completed, time_spent_minutes,
+            (participant_id, prolific_pid, study_id, session_id, start_time, completed_time, completed, time_spent_minutes,
              age, gender, education, nationality)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 participant_id,
+                prolific_info.get("prolific_pid"),
+                prolific_info.get("study_id"),
+                prolific_info.get("session_id"),
                 start_time,
                 completed_time,
                 participant_data.get("completed", False),

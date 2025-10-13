@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutritional Misinformation Survey Overview</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333;
+            --text-color: #444;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .flow-diagram {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+            position: relative;
+        }
+        
+        .flow-diagram::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background-color: var(--primary-color);
+            z-index: 1;
+            opacity: 0.3;
+        }
+        
+        .step {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 50%;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .step-label {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            font-size: 0.8rem;
+            color: var(--text-color);
+            margin-top: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .section {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+            padding: 1.5rem;
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--dark-gray);
+        }
+        
+        h1 {
+            margin-top: 0;
+        }
+        
+        h3 {
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .question-block {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--light-gray);
+            border-radius: 5px;
+        }
+        
+        .question {
+            font-weight: bold;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .options ul, .options ol {
+            margin-top: 0.5rem;
+            padding-left: 1.5rem;
+        }
+        
+        .scale {
+            display: flex;
+            justify-content: space-between;
+            background-color: #fff;
+            border-radius: 3px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .scale-point {
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            padding: 1rem;
+            background-color: var(--light-gray);
+        }
+        
+        .note {
+            background-color: rgba(52, 152, 219, 0.1);
+            border-left: 4px solid var(--primary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+        
+        @media (max-width: 768px) {
+            .flow-diagram {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 2rem;
+            }
+            
+            .flow-diagram::after {
+                width: 4px;
+                height: 100%;
+                top: 0;
+                left: 1.5rem;
+            }
+            
+            .step {
+                margin-left: 0;
+            }
+            
+            .step-label {
+                left: 4rem;
+                top: 50%;
+                transform: translateY(-50%);
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Nutritional Misinformation Survey</h1>
+        <p>Complete Overview of Survey Flow and Questions</p>
+    </header>
+    
+    <div class="container">
+        <section>
+            <h2>Survey Flow</h2>
+            <div class="note">
+                This survey investigates how people evaluate recipes generated by AI in terms of healthiness, correctness, and complexity, with a focus on detecting nutritional misinformation.
+            </div>
+            
+            <!-- Improved Survey Flow Diagram -->
+            <div style="max-width: 900px; margin: 40px auto; position: relative;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <!-- Flow diagram with steps -->
+                    <div style="display: flex; flex-direction: row; align-items: center; width: 100%; justify-content: space-between; margin-bottom: 30px;">
+                        <!-- Step 1: Introduction & Consent -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 120px;">
+                            <div style="background-color: #3498db; color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16);">
+                                <span style="font-weight: bold; font-size: 18px;">1</span>
+                            </div>
+                            <div style="text-align: center; font-size: 14px; line-height: 1.3;">
+                                <strong>Introduction</strong><br>
+                                <span style="font-size: 12px;">Consent Form</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <div style="flex: 1; max-width: 60px; display: flex; justify-content: center;">
+                            <svg width="60" height="20" viewBox="0 0 60 20">
+                                <line x1="0" y1="10" x2="50" y2="10" stroke="#3498db" stroke-width="3"/>
+                                <polygon points="50,5 60,10 50,15" fill="#3498db"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Step 2: Demographics -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 120px;">
+                            <div style="background-color: #3498db; color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16);">
+                                <span style="font-weight: bold; font-size: 18px;">2</span>
+                            </div>
+                            <div style="text-align: center; font-size: 14px; line-height: 1.3;">
+                                <strong>Demographics</strong><br>
+                                <span style="font-size: 12px;">Age, Gender, Education</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <div style="flex: 1; max-width: 60px; display: flex; justify-content: center;">
+                            <svg width="60" height="20" viewBox="0 0 60 20">
+                                <line x1="0" y1="10" x2="50" y2="10" stroke="#3498db" stroke-width="3"/>
+                                <polygon points="50,5 60,10 50,15" fill="#3498db"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Step 3-7: Recipe Evaluations (with indicator that it's repeated) -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 220px;">
+                            <!-- Repetition indicator -->
+                            <div style="background-color: #e74c3c; color: white; font-weight: bold; font-size: 14px; padding: 3px 8px; border-radius: 12px; margin-bottom: 5px;">
+                                Repeated 5 times (one recipe at a time)
+                            </div>
+                            
+                            <div style="background-color: #3498db; color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16);">
+                                <span style="font-weight: bold; font-size: 18px;">3-7</span>
+                            </div>
+                            <div style="text-align: center; font-size: 14px; line-height: 1.3;">
+                                <strong>Recipe Evaluation</strong><br>
+                                <span style="font-size: 12px;">Rating clarity, correctness, feasibility</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <div style="flex: 1; max-width: 60px; display: flex; justify-content: center;">
+                            <svg width="60" height="20" viewBox="0 0 60 20">
+                                <line x1="0" y1="10" x2="50" y2="10" stroke="#3498db" stroke-width="3"/>
+                                <polygon points="50,5 60,10 50,15" fill="#3498db"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Step 8: Post-Survey -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 120px;">
+                            <div style="background-color: #3498db; color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16);">
+                                <span style="font-weight: bold; font-size: 18px;">8</span>
+                            </div>
+                            <div style="text-align: center; font-size: 14px; line-height: 1.3;">
+                                <strong>Post-Survey</strong><br>
+                                <span style="font-size: 12px;">Cooking habits & AI usage</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Arrow -->
+                        <div style="flex: 1; max-width: 60px; display: flex; justify-content: center;">
+                            <svg width="60" height="20" viewBox="0 0 60 20">
+                                <line x1="0" y1="10" x2="50" y2="10" stroke="#3498db" stroke-width="3"/>
+                                <polygon points="50,5 60,10 50,15" fill="#3498db"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Step 9: Debriefing -->
+                        <div style="display: flex; flex-direction: column; align-items: center; width: 120px;">
+                            <div style="background-color: #3498db; color: white; width: 80px; height: 80px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin-bottom: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.16);">
+                                <span style="font-weight: bold; font-size: 18px;">9</span>
+                            </div>
+                            <div style="text-align: center; font-size: 14px; line-height: 1.3;">
+                                <strong>Debriefing</strong><br>
+                                <span style="font-size: 12px;">Study explanation & thanks</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recipe Selection Box -->
+                    <div style="border: 2px dashed #3498db; border-radius: 10px; padding: 15px; background-color: #f8f9fa; margin: 20px 0; width: 80%; max-width: 600px;">
+                        <h4 style="margin-top: 0; color: #3498db; text-align: center;">Random Recipe Selection Logic</h4>
+                        <p style="text-align: center; margin-bottom: 15px;">Each participant is randomly assigned 5 recipes from different categories</p>
+                        
+                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+                            <div style="width: 110px; height: 80px; background-color: white; border: 1px solid #ddd; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #3498db;">Recipe 1</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Category A</div>
+                            </div>
+                            <div style="width: 110px; height: 80px; background-color: white; border: 1px solid #ddd; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #3498db;">Recipe 2</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Category B</div>
+                            </div>
+                            <div style="width: 110px; height: 80px; background-color: white; border: 1px solid #ddd; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #3498db;">Recipe 3</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Category C</div>
+                            </div>
+                            <div style="width: 110px; height: 80px; background-color: white; border: 1px solid #ddd; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #3498db;">Recipe 4</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Category D</div>
+                            </div>
+                            <div style="width: 110px; height: 80px; background-color: white; border: 1px solid #ddd; border-radius: 5px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <div style="font-weight: bold; color: #3498db;">Recipe 5</div>
+                                <div style="font-size: 11px; color: #666; margin-top: 5px;">Category E</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Numerical flow description -->
+            <div style="max-width: 700px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+                <ol style="margin: 0; padding-left: 20px;">
+                    <li><strong>Introduction & Consent</strong> - Study information and participant consent</li>
+                    <li><strong>Demographics Collection</strong> - Basic demographic information (age, gender, education, country)</li>
+                    <li><strong>Recipe Evaluation 1</strong> - First randomly selected recipe evaluation</li>
+                    <li><strong>Recipe Evaluation 2</strong> - Second randomly selected recipe evaluation</li>
+                    <li><strong>Recipe Evaluation 3</strong> - Third randomly selected recipe evaluation</li>
+                    <li><strong>Recipe Evaluation 4</strong> - Fourth randomly selected recipe evaluation</li>
+                    <li><strong>Recipe Evaluation 5</strong> - Fifth randomly selected recipe evaluation</li>
+                    <li><strong>Post-Survey Questions</strong> - Questions about cooking habits and AI usage</li>
+                    <li><strong>Debriefing</strong> - Study explanation and thank you message</li>
+                </ol>
+                <p style="margin-top: 15px; font-size: 14px;"><strong>Note:</strong> Each recipe evaluation includes viewing recipe details (ingredients, instructions, nutrition info) and answering 11 questions about its quality, clarity, correctness, feasibility, etc.</p>
+            </div>
+        </section>
+        
+
+        
+        <section>
+            <h2>Recipe Selection Logic</h2>
+            <ul>
+                <li>5 random recipes are selected from different categories</li>
+                <li>Recipes are randomized to avoid order bias</li>
+                <li>Each participant gets a unique set of recipes</li>
+            </ul>
+        </section>
+        
+        <div class="section">
+            <h2>1. Introduction & Consent</h2>
+            <p>Participants are presented with information about:</p>
+            <ul>
+                <li>Study purpose</li>
+                <li>Researchers and contact information</li>
+                <li>Data privacy and participant rights</li>
+                <li>Expected time commitment (10 minutes)</li>
+            </ul>
+            
+            <div class="question-block">
+                <div class="question">Consent</div>
+                <div class="options">
+                    <input type="checkbox" disabled> I agree to participate in the study
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>2. Demographics Section</h2>
+            
+            <div class="question-block">
+                <div class="question">Age:</div>
+                <div class="options" style="padding-left: 20px;">
+                    • 18-24<br>
+                    • 25-34<br>
+                    • 35-44<br>
+                    • 45-54<br>
+                    • 55-64<br>
+                    • 65 or older<br>
+                    • Prefer not to say
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">Gender:</div>
+                <div class="options" style="padding-left: 20px;">
+                    • Male<br>
+                    • Female<br>
+                    • Non-binary<br>
+                    • Prefer not to say
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">Education Level:</div>
+                <div class="options" style="padding-left: 20px;">
+                    • High school or equivalent<br>
+                    • Some college/university<br>
+                    • Bachelor's degree<br>
+                    • Master's degree<br>
+                    • Doctoral degree<br>
+                    • Prefer not to say
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">Which country do you live in?</div>
+                <div class="options" style="padding-left: 20px;">
+                    • US<br>
+                    • UK<br>
+                    • Prefer not to say
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>3-7. Recipe Evaluation Section</h2>
+            <p><em>Repeated for each of the 5 recipes. Participants see the recipe with ingredients, instructions, and nutrition information before answering these questions:</em></p>
+            
+            <!-- Recipe Evaluation Interface Mockup -->
+            <div style="max-width: 700px; margin: 0 auto 30px auto; display: flex; flex-direction: column;">
+                <!-- Mobile device frame -->
+                <div style="width: 360px; margin: 0 auto; border: 15px solid #222; border-top-width: 40px; border-bottom-width: 40px; border-radius: 20px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.2);">
+                    <!-- Phone notch -->
+                    <div style="position: absolute; top: -25px; width: 120px; height: 25px; background-color: #222; left: 50%; transform: translateX(-50%); border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;"></div>
+                    
+                    <!-- App screen -->
+                    <div style="height: 640px; background-color: #fff; overflow-y: auto; position: relative;">
+                        <!-- Header -->
+                        <div style="background-color: var(--primary-color); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 10;">
+                            <h3 style="margin: 0;">Recipe Evaluation</h3>
+                        </div>
+                        
+                        <!-- Progress bar -->
+                        <div style="background-color: #f0f0f0; height: 10px; width: 100%;">
+                            <div style="background-color: var(--primary-color); height: 10px; width: 43%;"></div>
+                        </div>
+                        <div style="text-align: center; padding: 5px 0; background-color: #f0f0f0; font-size: 12px;">
+                            Step 3 of 7
+                        </div>
+                        
+                        <!-- Recipe content -->
+                        <div style="padding: 15px;">
+                            <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
+                                <h4 style="margin-top: 0; color: var(--secondary-color);">Avocado Pasta</h4>
+                                
+                                <div style="margin-top: 15px;">
+                                    <h5 style="color: var(--secondary-color); margin-bottom: 5px;">Ingredients</h5>
+                                    <p style="margin: 0;">
+                                        - 8 oz spaghetti or pasta of choice<br>
+                                        - 2 ripe avocados<br>
+                                        - 2 cloves garlic, minced<br>
+                                        - 2 tbsp olive oil<br>
+                                        - 1 tbsp fresh lemon juice<br>
+                                        - Salt and pepper to taste<br>
+                                        - Cherry tomatoes, halved (optional)<br>
+                                        - Fresh basil for garnish
+                                    </p>
+                                </div>
+                                
+                                <div style="margin-top: 15px;">
+                                    <h5 style="color: var(--secondary-color); margin-bottom: 5px;">Instructions</h5>
+                                    <p style="margin: 0;">
+                                        1. Cook pasta according to package instructions until al dente.<br>
+                                        2. While pasta cooks, cut avocados in half, remove pit, and scoop flesh into a food processor.<br>
+                                        3. Add garlic, olive oil, lemon juice, salt, and pepper to food processor. Blend until smooth.<br>
+                                        4. Drain pasta and return to pot. Immediately add avocado sauce and toss to combine.<br>
+                                        5. Serve topped with halved cherry tomatoes and fresh basil.
+                                    </p>
+                                </div>
+                                
+                                <div style="margin-top: 15px;">
+                                    <h5 style="color: var(--secondary-color); margin-bottom: 5px;">Nutrition Information</h5>
+                                    <p style="margin: 0; font-size: 13px;">
+                                        <strong>Calories:</strong> 450 kcal | 
+                                        <strong>Protein:</strong> 10g | 
+                                        <strong>Carbohydrates:</strong> 54g | 
+                                        <strong>Fat:</strong> 22g | 
+                                        <strong>Fiber:</strong> 9g | 
+                                        <strong>Sodium:</strong> 15mg
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- Questions with numbers -->
+                            <div style="margin-top: 20px;">
+                                <h5 style="margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Please answer the following questions:</h5>
+                                
+                                <div style="margin-bottom: 20px;">
+                                    <p style="font-weight: bold; margin-bottom: 10px; color: var(--dark-gray);">
+                                        <span style="display: inline-block; background-color: var(--primary-color); color: white; width: 24px; height: 24px; text-align: center; border-radius: 50%; margin-right: 8px;">1</span>
+                                        How would you rate the clarity of this recipe?
+                                    </p>
+                                    <div style="display: flex; justify-content: space-between; text-align: center; margin-bottom: 20px; background-color: #f5f5f5; padding: 10px; border-radius: 5px;">
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_1_mock" name="clarity_rating_mock">
+                                            <label for="clarity_1_mock" style="display: block; font-size: 12px;">1<br>Not clear</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_2_mock" name="clarity_rating_mock">
+                                            <label for="clarity_2_mock" style="display: block; font-size: 12px;">2</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_3_mock" name="clarity_rating_mock">
+                                            <label for="clarity_3_mock" style="display: block; font-size: 12px;">3</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_4_mock" name="clarity_rating_mock" checked>
+                                            <label for="clarity_4_mock" style="display: block; font-size: 12px;">4</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_5_mock" name="clarity_rating_mock">
+                                            <label for="clarity_5_mock" style="display: block; font-size: 12px;">5</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_6_mock" name="clarity_rating_mock">
+                                            <label for="clarity_6_mock" style="display: block; font-size: 12px;">6</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="clarity_7_mock" name="clarity_rating_mock">
+                                            <label for="clarity_7_mock" style="display: block; font-size: 12px;">7<br>Very clear</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px;">
+                                    <p style="font-weight: bold; margin-bottom: 10px; color: var(--dark-gray);">
+                                        <span style="display: inline-block; background-color: var(--primary-color); color: white; width: 24px; height: 24px; text-align: center; border-radius: 50%; margin-right: 8px;">2</span>
+                                        How complete is this recipe?
+                                    </p>
+                                    <div style="display: flex; justify-content: space-between; text-align: center; margin-bottom: 20px; background-color: #f5f5f5; padding: 10px; border-radius: 5px;">
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_1_mock" name="complete_rating_mock">
+                                            <label for="complete_1_mock" style="display: block; font-size: 12px;">1<br>Incomplete</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_2_mock" name="complete_rating_mock">
+                                            <label for="complete_2_mock" style="display: block; font-size: 12px;">2</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_3_mock" name="complete_rating_mock" checked>
+                                            <label for="complete_3_mock" style="display: block; font-size: 12px;">3</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_4_mock" name="complete_rating_mock">
+                                            <label for="complete_4_mock" style="display: block; font-size: 12px;">4</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_5_mock" name="complete_rating_mock">
+                                            <label for="complete_5_mock" style="display: block; font-size: 12px;">5</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_6_mock" name="complete_rating_mock">
+                                            <label for="complete_6_mock" style="display: block; font-size: 12px;">6</label>
+                                        </div>
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="complete_7_mock" name="complete_rating_mock">
+                                            <label for="complete_7_mock" style="display: block; font-size: 12px;">7<br>Complete</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px;">
+                                    <p style="font-weight: bold; margin-bottom: 10px; color: var(--dark-gray);">
+                                        <span style="display: inline-block; background-color: var(--primary-color); color: white; width: 24px; height: 24px; text-align: center; border-radius: 50%; margin-right: 8px;">3</span>
+                                        How correct is this recipe overall?
+                                    </p>
+                                    <div style="display: flex; justify-content: space-between; text-align: center; margin-bottom: 20px; background-color: #f5f5f5; padding: 10px; border-radius: 5px;">
+                                        <!-- Rating options similar to above -->
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="correct_1_mock" name="correct_rating_mock">
+                                            <label for="correct_1_mock" style="display: block; font-size: 12px;">1</label>
+                                        </div>
+                                        <!-- ... other radio buttons ... -->
+                                        <div style="flex: 1; max-width: 40px;">
+                                            <input type="radio" id="correct_7_mock" name="correct_rating_mock">
+                                            <label for="correct_7_mock" style="display: block; font-size: 12px;">7</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <p style="text-align: center; color: #666; font-style: italic;">... additional questions 4-11 would appear here ...</p>
+                                
+                                <button style="background-color: var(--primary-color); color: white; border: none; padding: 12px 20px; border-radius: 5px; width: 100%; margin-top: 20px; cursor: pointer; font-weight: bold;">Continue</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Caption -->
+                <p style="text-align: center; margin-top: 15px; color: #666;">Figure: Mobile interface for recipe evaluation showing numbered questions</p>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">1. How would you rate the clarity of this recipe?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Not at all clear, 7 = Very clear)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">2. How complete is this recipe?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Very incomplete, 7 = Very complete)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">3. How correct is this recipe overall?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Not at all correct, 7 = Very correct)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">4. How would you rate healthiness of this recipe?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Not at all healthy, 7 = Very healthy)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">5. How tasty do you think this recipe would be?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Not at all tasty, 7 = Very tasty)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">6. Rate the complexness of each component:</div>
+                
+                <div style="margin: 10px 0 5px 20px;">
+                    <strong>Ingredients list complexness:</strong><br>
+                    <div style="margin-left: 20px;">
+                        (7-point Likert scale: 1 = Poor, 7 = Excellent)
+                    </div>
+                </div>
+                
+                <div style="margin: 10px 0 5px 20px;">
+                    <strong>Instructions complexness:</strong><br>
+                    <div style="margin-left: 20px;">
+                        (7-point Likert scale: 1 = Poor, 7 = Excellent)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">7. Please rate the correctness of each component:</div>
+                
+                <div style="margin: 10px 0 5px 20px;">
+                    <strong>Ingredients list correctness:</strong><br>
+                    <div style="margin-left: 20px;">
+                        (7-point Likert scale: 1 = Poor, 7 = Excellent)
+                    </div>
+                </div>
+                
+                <div style="margin: 10px 0 5px 20px;">
+                    <strong>Instructions correctness:</strong><br>
+                    <div style="margin-left: 20px;">
+                        (7-point Likert scale: 1 = Poor, 7 = Excellent)
+                    </div>
+                </div>
+                
+                <div style="margin: 10px 0 5px 20px;">
+                    <strong>Nutrition information correctness:</strong><br>
+                    <div style="margin-left: 20px;">
+                        (7-point Likert scale: 1 = Poor, 7 = Excellent)
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">How feasible would it be for you to make this recipe at home?</div>
+                <div class="options">
+                    <div class="scale">
+                        <div class="scale-point">1<br>Not at all feasible</div>
+                        <div class="scale-point">2</div>
+                        <div class="scale-point">3</div>
+                        <div class="scale-point">4</div>
+                        <div class="scale-point">5</div>
+                        <div class="scale-point">6</div>
+                        <div class="scale-point">7<br>Very feasible</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">How would you rate the overall attractiveness of this recipe?</div>
+                <div class="options">
+                    <div class="scale">
+                        <div class="scale-point">1<br>Very poor</div>
+                        <div class="scale-point">2</div>
+                        <div class="scale-point">3</div>
+                        <div class="scale-point">4</div>
+                        <div class="scale-point">5</div>
+                        <div class="scale-point">6</div>
+                        <div class="scale-point">7<br>Excellent</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">How likely it is that you would prepare this recipe?</div>
+                <div class="options">
+                    <div class="scale">
+                        <div class="scale-point">1<br>Very unlikely</div>
+                        <div class="scale-point">2</div>
+                        <div class="scale-point">3</div>
+                        <div class="scale-point">4</div>
+                        <div class="scale-point">5</div>
+                        <div class="scale-point">6</div>
+                        <div class="scale-point">7<br>Very likely</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">Any additional comments about this recipe? (Optional)</div>
+                <div class="options">
+                    <textarea disabled rows="2" style="width: 100%"></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>8. Post-Survey Section</h2>
+            
+            <div class="question-block">
+                <div class="question">1. How would you rate your cooking skills?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Beginner, 7 = Expert)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">2. How often do you cook new recipes?</div>
+                <div class="options" style="padding-left: 20px;">
+                    • Very often - I try new recipes multiple times a week<br>
+                    • Often - I try new recipes weekly<br>
+                    • Sometimes - I try new recipes a couple times a month<br>
+                    • Rarely - I try new recipes a few times a year<br>
+                    • Never - I stick to recipes I already know
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">3. What's most important to you when deciding whether to try a recipe?</div>
+                <div class="options" style="padding-left: 20px;">
+                    • Clear instructions<br>
+                    • Simple preparation<br>
+                    • Common ingredients I already have<br>
+                    • Nutritional value<br>
+                    • How the final dish will look
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">4. How often do you cook meals at home?</div>
+                <div class="options" style="padding-left: 20px;">
+                    • Daily<br>
+                    • Several times a week<br>
+                    • About once a week<br>
+                    • A few times a month<br>
+                    • Rarely<br>
+                    • Never
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">5. How much would you trust recipes created by human authors?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Not at all, 7 = Completely)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">6. How much would you trust recipes generated by AI tools (e.g., ChatGPT)?</div>
+                <div class="options" style="margin-top: 10px;">
+                    (7-point Likert scale: 1 = Not at all, 7 = Completely)
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">7. How frequently do you use AI platforms like ChatGPT, DeepSeek, or Gemini Assistant?</div>
+                <div class="options" style="padding-left: 20px;">
+                    • Daily<br>
+                    • Several times a week<br>
+                    • Weekly<br>
+                    • Monthly<br>
+                    • Rarely<br>
+                    • Never used<br>
+                    • Not familiar with these platforms
+                </div>
+            </div>
+            
+            <div class="question-block">
+                <div class="question">8. Any comments about what makes a recipe feasible for you to cook? (Optional)</div>
+                <div class="options">
+                    <div style="color: #777; font-style: italic;">Free-text response field</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>9. Debriefing Section</h2>
+            
+            <h3>Thank You for Your Participation!</h3>
+            
+            <p>You have completed all parts of our study. Your participation is greatly appreciated and will contribute to our research.</p>
+            
+            <h4>About This Study</h4>
+            <p>This research aimed to investigate how people evaluate recipes generated by AI in terms of healthiness, correctness, and complexity. We are particularly interested in how people detect misinformation in AI-generated recipes and whether traditional nutritional knowledge helps in identifying errors.</p>
+            
+            <p>The recipes you evaluated were generated by different AI systems, with some containing deliberate nutritional inaccuracies. Your feedback helps us understand how to improve AI recipe generation and protect users from potential misinformation.</p>
+            
+            <h4>Questions or Concerns?</h4>
+            <p>If you have any questions about this study or would like to learn more about the results once they are available, please contact the research team at:</p>
+            <p><strong>Email:</strong> yelys8402@uib.no</p>
+            
+            <button disabled style="background-color: var(--primary-color); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; cursor: not-allowed;">Return to Homepage</button>
+        </div>
+        
+        <div class="section">
+            <h2>Data Storage</h2>
+            <p>The survey data is stored in an SQLite database with the following structure:</p>
+            <ol>
+                <li><strong>participants table</strong> - Stores demographic information</li>
+                <li><strong>recipe_evaluations table</strong> - Stores recipe ratings and comments</li>
+                <li><strong>post_surveys table</strong> - Stores post-survey responses</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p>© 2025 SFI MediaFutures - Nutritional Misinformation Study</p>
+    </div>
+</body>
+</html>
