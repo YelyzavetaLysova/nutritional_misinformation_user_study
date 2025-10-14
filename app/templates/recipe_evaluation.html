@@ -175,6 +175,25 @@
                     </div>
                 </div>
                 
+                {% if step == 3 %}
+                <!-- Attention Check Question (only for step 3) -->
+                <div class="rating-group correctness-details">
+                    <label>How confident are you in your answer? Please select "7" on the scale below. This is an attention check.</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                {% for i in range(1, 8) %}
+                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                    <input type="radio" id="attention_check_recipe_{{ i }}" name="attention_check_recipe" value="{{ i }}" required>
+                                    <label for="attention_check_recipe_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
                 <!-- Question 6: Complexity ratings -->
                 <div class="rating-group correctness-details">
                     <label>6. Complexity: Ingredients list / Instructions - "Rate the complexity of each component: ingredients, instructions"</label>
@@ -294,23 +313,6 @@
                 <div class="form-group">
                     <label for="comments">8. Any additional comments about this recipe? (Optional, open question)</label>
                     <textarea id="comments" name="comments" rows="3" placeholder="Please share any thoughts about this recipe..."></textarea>
-                </div>
-                
-                <!-- Attention Check Question -->
-                <div class="rating-group correctness-details">
-                    <label style="color: #d73502; font-weight: bold;">Attention Check: Please select "3" on the scale below. This is an attention check.</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="attention_check_recipe_{{ i }}" name="attention_check_recipe" value="{{ i }}" required>
-                                    <label for="attention_check_recipe_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 
                 <button type="submit" class="btn-primary">Continue</button>

@@ -1,0 +1,4 @@
+id,participant_id,eval_number,recipe_id,recipe_name,recipe_category,completeness_rating,healthiness_rating,tastiness_rating,feasibility_rating,would_make,ingredients_complexity,instructions_complexity,ingredients_correctness,instructions_correctness,nutrition_correctness,comments,attention_check_recipe
+1,p_20251014143017_1245,1,25,Classic Oatmeal,Breakfast,3,3,3,3,3,3,3,3,3,3,,
+2,p_20251014143017_1245,2,127,Beef and Mushroom Stroganoff,dinner  ,3,4,3,4,3,5,4,3,3,4,,
+3,p_20251014143017_1245,3,126,Beef and Vegetable Soup,lunch  ,7,7,7,7,7,7,4,4,3,4,,5.0

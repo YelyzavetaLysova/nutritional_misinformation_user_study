@@ -36,6 +36,9 @@ def init_db():
         completed_time TEXT,
         completed BOOLEAN,
         time_spent_minutes REAL,
+        current_step INTEGER DEFAULT 0,
+        step_completed_at TEXT,
+        last_activity_at TEXT,
         age TEXT,
         gender TEXT,
         education TEXT
@@ -132,6 +135,9 @@ def save_participant(participant_data: Dict[str, Any]):
                 completed_time = ?,
                 completed = ?,
                 time_spent_minutes = ?,
+                current_step = ?,
+                step_completed_at = ?,
+                last_activity_at = ?,
                 age = ?,
                 gender = ?,
                 education = ?
@@ -144,6 +150,9 @@ def save_participant(participant_data: Dict[str, Any]):
                 completed_time,
                 participant_data.get("completed", False),
                 time_spent_minutes,
+                participant_data.get("current_step", 0),
+                participant_data.get("step_completed_at"),
+                datetime.now().isoformat(),
                 demographics.get("age"),
                 demographics.get("gender"),
                 demographics.get("education"),
@@ -154,8 +163,8 @@ def save_participant(participant_data: Dict[str, Any]):
             cursor.execute("""
             INSERT INTO participants 
             (participant_id, prolific_pid, study_id, session_id, start_time, completed_time, completed, time_spent_minutes,
-             age, gender, education)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             current_step, step_completed_at, last_activity_at, age, gender, education)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 participant_id,
                 prolific_info.get("prolific_pid"),
@@ -165,6 +174,9 @@ def save_participant(participant_data: Dict[str, Any]):
                 completed_time,
                 participant_data.get("completed", False),
                 time_spent_minutes,
+                participant_data.get("current_step", 0),
+                participant_data.get("step_completed_at"),
+                datetime.now().isoformat(),
                 demographics.get("age"),
                 demographics.get("gender"),
                 demographics.get("education")
@@ -480,5 +492,150 @@ def export_to_csv():
     except Exception as e:
         logger.error(f"Error exporting data to CSV: {e}")
         return False
+    finally:
+        conn.close()
+
+
+def check_prolific_duplicate(prolific_pid: str) -> List[Dict]:
+    """
+    Check for duplicate Prolific participants.
+    Returns list of participant records with same prolific_pid.
+    """
+    if not prolific_pid:
+        return []
+    
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+        SELECT participant_id, start_time, completed, current_step, last_activity_at
+        FROM participants 
+        WHERE prolific_pid = ? 
+        ORDER BY start_time
+        """, (prolific_pid,))
+        
+        results = [dict(row) for row in cursor.fetchall()]
+        return results
+        
+    except Exception as e:
+        logger.error(f"Error checking Prolific duplicates: {e}")
+        return []
+    finally:
+        conn.close()
+
+def get_quality_metrics() -> Dict[str, any]:
+    """
+    Get data quality metrics from the database.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    metrics = {
+        "total_participants": 0,
+        "completed_participants": 0,
+        "prolific_participants": 0,
+        "attention_check_failures": 0,
+        "duplicate_prolific_ids": 0,
+        "fast_responses": 0,
+        "slow_responses": 0
+    }
+    
+    try:
+        # Total participants
+        cursor.execute("SELECT COUNT(*) FROM participants")
+        metrics["total_participants"] = cursor.fetchone()[0]
+        
+        # Completed participants
+        cursor.execute("SELECT COUNT(*) FROM participants WHERE completed = 1")
+        metrics["completed_participants"] = cursor.fetchone()[0]
+        
+        # Prolific participants
+        cursor.execute("SELECT COUNT(*) FROM participants WHERE prolific_pid IS NOT NULL")
+        metrics["prolific_participants"] = cursor.fetchone()[0]
+        
+        # Attention check failures (recipe eval step 3)
+        cursor.execute("SELECT COUNT(*) FROM recipe_evaluations WHERE attention_check_recipe IS NOT NULL AND attention_check_recipe != 3")
+        recipe_failures = cursor.fetchone()[0]
+        
+        # Attention check failures (post survey)
+        cursor.execute("SELECT COUNT(*) FROM post_surveys WHERE attention_check_post IS NOT NULL AND attention_check_post != 'gemini'")
+        post_failures = cursor.fetchone()[0]
+        
+        metrics["attention_check_failures"] = recipe_failures + post_failures
+        
+        # Duplicate Prolific IDs
+        cursor.execute("""
+        SELECT COUNT(*) FROM (
+            SELECT prolific_pid FROM participants 
+            WHERE prolific_pid IS NOT NULL 
+            GROUP BY prolific_pid 
+            HAVING COUNT(*) > 1
+        )
+        """)
+        metrics["duplicate_prolific_ids"] = cursor.fetchone()[0]
+        
+        return metrics
+        
+    except Exception as e:
+        logger.error(f"Error getting quality metrics: {e}")
+        return metrics
+    finally:
+        conn.close()
+
+def get_participants_with_quality_flags() -> List[Dict]:
+    """
+    Get all participants with their quality assessment flags.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+        SELECT p.participant_id, p.prolific_pid, p.completed, p.time_spent_minutes,
+               p.start_time, p.completed_time,
+               -- Check for attention check failures
+               (SELECT COUNT(*) FROM recipe_evaluations re 
+                WHERE re.participant_id = p.participant_id 
+                AND re.attention_check_recipe IS NOT NULL 
+                AND re.attention_check_recipe != 3) as recipe_attention_failures,
+               (SELECT COUNT(*) FROM post_surveys ps 
+                WHERE ps.participant_id = p.participant_id 
+                AND ps.attention_check_post IS NOT NULL 
+                AND ps.attention_check_post != 'gemini') as post_attention_failures,
+               -- Get response time info (would need additional processing)
+               p.last_activity_at
+        FROM participants p
+        ORDER BY p.start_time DESC
+        """)
+        
+        participants = []
+        for row in cursor.fetchall():
+            participant = dict(row)
+            
+            # Add quality flags
+            participant["attention_check_passed"] = (
+                participant["recipe_attention_failures"] == 0 and 
+                participant["post_attention_failures"] == 0
+            )
+            
+            # Check for duplicate Prolific IDs if this is a Prolific participant
+            if participant["prolific_pid"]:
+                duplicates = check_prolific_duplicate(participant["prolific_pid"])
+                participant["has_prolific_duplicates"] = len(duplicates) > 1
+                participant["prolific_duplicate_count"] = len(duplicates)
+            else:
+                participant["has_prolific_duplicates"] = False
+                participant["prolific_duplicate_count"] = 0
+            
+            participants.append(participant)
+        
+        return participants
+        
+    except Exception as e:
+        logger.error(f"Error getting participants with quality flags: {e}")
+        return []
     finally:
         conn.close()

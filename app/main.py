@@ -3,7 +3,7 @@ import csv
 import json
 import logging
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
 
 import pandas as pd
@@ -82,6 +82,21 @@ except Exception as e:
 # Constants
 NUM_RECIPES_PER_PARTICIPANT = 5
 REQUIRED_STEPS = ["demographics", "recipe_eval_1", "recipe_eval_2", "recipe_eval_3", "recipe_eval_4", "recipe_eval_5", "post_survey", "debriefing"]
+SESSION_TIMEOUT_MINUTES = 60  # 60-minute session timeout
+MIN_RESPONSE_TIME_SECONDS = 30  # Minimum time per recipe evaluation
+MAX_RESPONSE_TIME_MINUTES = 10  # Maximum time per recipe evaluation
+
+# Step mapping for validation
+STEP_ROUTES = {
+    0: "/demographics",
+    1: "/recipe_eval_1", 
+    2: "/recipe_eval_2",
+    3: "/recipe_eval_3", 
+    4: "/recipe_eval_4",
+    5: "/recipe_eval_5",
+    6: "/post_survey",
+    7: "/debriefing"
+}
 
 
 class Participant(BaseModel):
@@ -91,10 +106,192 @@ class Participant(BaseModel):
     responses: Dict = {}
     completed: bool = False
     start_time: Optional[str] = None
+    last_activity: Optional[str] = None
+    step_times: Dict[str, str] = {}  # Track when each step was started
 
 
 # In-memory participant data store (replace with a database in production)
 participants = {}
+
+
+def validate_step_access(participant: Optional[Participant], requested_step: int) -> bool:
+    """
+    Validate if participant can access the requested step.
+    Returns True if access is allowed, False otherwise.
+    """
+    if not participant:
+        return requested_step == 0  # Only allow demographics for new participants
+    
+    # Allow access to current step or previous completed steps
+    return requested_step <= participant.current_step
+
+def get_correct_step_redirect(participant: Optional[Participant]) -> str:
+    """
+    Get the correct URL to redirect participant to based on their progress.
+    """
+    if not participant:
+        return "/demographics"
+    
+    # If completed, go to debriefing
+    if participant.completed:
+        return "/debriefing"
+    
+    # Otherwise, go to current step
+    current_step = participant.current_step
+    if current_step >= len(STEP_ROUTES):
+        return "/debriefing"
+    
+    return STEP_ROUTES.get(current_step, "/demographics")
+
+def is_session_expired(participant: Optional[Participant]) -> bool:
+    """Check if participant's session has expired."""
+    if not participant or not participant.last_activity:
+        return False
+    
+    try:
+        last_activity = datetime.fromisoformat(participant.last_activity)
+        return datetime.now() - last_activity > timedelta(minutes=SESSION_TIMEOUT_MINUTES)
+    except Exception as e:
+        logger.warning(f"Error checking session expiry: {e}")
+        return False
+
+def update_participant_activity(participant: Participant):
+    """Update participant's last activity timestamp."""
+    participant.last_activity = datetime.now().isoformat()
+
+def validate_response_time(start_time: str, step_type: str) -> Dict[str, any]:
+    """
+    Validate response time for a step.
+    Returns dict with validation info.
+    """
+    result = {
+        "valid": True,
+        "time_spent_seconds": None,
+        "warning": None
+    }
+    
+    try:
+        start_dt = datetime.fromisoformat(start_time)
+        end_dt = datetime.now()
+        time_spent = (end_dt - start_dt).total_seconds()
+        result["time_spent_seconds"] = time_spent
+        
+        # Check for suspiciously fast responses on recipe evaluations
+        if step_type.startswith("recipe_eval") and time_spent < MIN_RESPONSE_TIME_SECONDS:
+            result["valid"] = False
+            result["warning"] = f"Response too fast: {time_spent:.1f}s (minimum: {MIN_RESPONSE_TIME_SECONDS}s)"
+            logger.warning(f"Fast response detected: {time_spent:.1f}s for {step_type}")
+        
+        # Check for suspiciously slow responses
+        elif time_spent > (MAX_RESPONSE_TIME_MINUTES * 60):
+            result["warning"] = f"Response very slow: {time_spent/60:.1f}min (maximum expected: {MAX_RESPONSE_TIME_MINUTES}min)"
+            logger.warning(f"Slow response detected: {time_spent/60:.1f}min for {step_type}")
+        
+    except Exception as e:
+        logger.error(f"Error validating response time: {e}")
+        result["warning"] = "Could not validate response time"
+    
+    return result
+
+def validate_attention_checks(participant: Participant) -> Dict[str, any]:
+    """
+    Validate attention checks for a participant.
+    Returns validation results.
+    """
+    results = {
+        "recipe_attention_check_passed": None,
+        "post_survey_attention_check_passed": None,
+        "overall_passed": True
+    }
+    
+    # Check recipe evaluation attention check (step 3)
+    recipe_eval_3 = participant.responses.get("recipe_eval_3", {})
+    if "attention_check_recipe" in recipe_eval_3:
+        expected_answer = 3  # Should select "3" on the scale
+        actual_answer = recipe_eval_3.get("attention_check_recipe")
+        passed = actual_answer == expected_answer
+        results["recipe_attention_check_passed"] = passed
+        if not passed:
+            logger.warning(f"Recipe attention check failed for {participant.id}: expected {expected_answer}, got {actual_answer}")
+            results["overall_passed"] = False
+    
+    # Check post-survey attention check
+    post_survey = participant.responses.get("post_survey", {})
+    if "attention_check_post" in post_survey:
+        expected_answer = "gemini"  # Should select "gemini" from dropdown
+        actual_answer = post_survey.get("attention_check_post")
+        passed = actual_answer == expected_answer
+        results["post_survey_attention_check_passed"] = passed
+        if not passed:
+            logger.warning(f"Post-survey attention check failed for {participant.id}: expected '{expected_answer}', got '{actual_answer}'")
+            results["overall_passed"] = False
+    
+    return results
+
+def detect_session_manipulation(participant_id: str, prolific_pid: str = None) -> Dict[str, any]:
+    """
+    Detect potential session manipulation attempts.
+    Returns detection results.
+    """
+    results = {
+        "multiple_sessions_detected": False,
+        "session_details": [],
+        "warning": None
+    }
+    
+    if not prolific_pid:
+        return results
+    
+    try:
+        # Check for multiple sessions with same Prolific ID
+        from app.db import check_prolific_duplicate
+        duplicates = check_prolific_duplicate(prolific_pid)
+        
+        if len(duplicates) > 1:
+            results["multiple_sessions_detected"] = True
+            results["session_details"] = duplicates
+            results["warning"] = f"Multiple sessions detected for Prolific ID {prolific_pid}: {len(duplicates)} sessions"
+            logger.warning(f"Session manipulation detected: {results['warning']}")
+        
+        logger.info(f"Session manipulation check for {participant_id} (Prolific: {prolific_pid}): {len(duplicates)} sessions found")
+        
+    except Exception as e:
+        logger.error(f"Error detecting session manipulation: {e}")
+        results["warning"] = "Could not check for session manipulation"
+    
+    return results
+    """
+    Validate response time for a step.
+    Returns dict with validation info.
+    """
+    result = {
+        "valid": True,
+        "time_spent_seconds": None,
+        "warning": None
+    }
+    
+    try:
+        start_dt = datetime.fromisoformat(start_time)
+        end_dt = datetime.now()
+        time_spent = (end_dt - start_dt).total_seconds()
+        result["time_spent_seconds"] = time_spent
+        
+        # Check for suspiciously fast responses on recipe evaluations
+        if step_type.startswith("recipe_eval") and time_spent < MIN_RESPONSE_TIME_SECONDS:
+            result["valid"] = False
+            result["warning"] = f"Response too fast: {time_spent:.1f}s (minimum: {MIN_RESPONSE_TIME_SECONDS}s)"
+            logger.warning(f"Fast response detected: {time_spent:.1f}s for {step_type}")
+        
+        # Check for suspiciously slow responses
+        elif time_spent > (MAX_RESPONSE_TIME_MINUTES * 60):
+            result["warning"] = f"Response very slow: {time_spent/60:.1f}min (maximum expected: {MAX_RESPONSE_TIME_MINUTES}min)"
+            logger.warning(f"Slow response detected: {time_spent/60:.1f}min for {step_type}")
+        
+    except Exception as e:
+        logger.error(f"Error validating response time: {e}")
+        result["warning"] = "Could not validate response time"
+    
+    return result
 
 
 def get_participant_from_session(request: Request) -> Optional[Participant]:
@@ -106,7 +303,18 @@ def get_participant_from_session(request: Request) -> Optional[Participant]:
     
     # First try to get from in-memory cache
     if participant_id in participants:
-        return participants[participant_id]
+        participant = participants[participant_id]
+        
+        # Check session expiry
+        if is_session_expired(participant):
+            logger.warning(f"Session expired for participant {participant_id}")
+            # Clear session
+            request.session.clear()
+            return None
+        
+        # Update activity timestamp
+        update_participant_activity(participant)
+        return participant
     
     # If not in memory, try to get from database
     from app.db import get_participant_data
@@ -186,8 +394,18 @@ def get_participant_from_session(request: Request) -> Optional[Participant]:
             current_step=participant_row.get("current_step", 0),
             responses=responses,
             completed=bool(participant_row.get("completed", False)),
-            start_time=participant_row.get("start_time")
+            start_time=participant_row.get("start_time"),
+            last_activity=participant_row.get("last_activity_at"),
+            step_times={}  # Initialize empty step times
         )
+        
+        # Check session expiry
+        if is_session_expired(participant):
+            logger.warning(f"Session expired for participant {participant_id}")
+            return None
+        
+        # Update activity timestamp
+        update_participant_activity(participant)
         
         # Cache in memory for faster subsequent access
         participants[participant_id] = participant
@@ -277,7 +495,8 @@ def create_new_participant() -> Participant:
     participant = Participant(
         id=participant_id,
         selected_recipes=selected_recipes,
-        start_time=datetime.now().isoformat()
+        start_time=datetime.now().isoformat(),
+        last_activity=datetime.now().isoformat()
     )
     
     participants[participant_id] = participant
@@ -316,6 +535,14 @@ async def start_survey(
     # Debug logging for Prolific parameters
     logger.info(f"Prolific parameters received: PID={prolific_pid}, STUDY_ID={study_id}, SESSION_ID={session_id}")
     
+    # Check for session manipulation if Prolific participant
+    if prolific_pid:
+        manipulation_check = detect_session_manipulation("new_participant", prolific_pid)
+        if manipulation_check["multiple_sessions_detected"]:
+            logger.warning(f"Potential session manipulation detected for Prolific ID {prolific_pid}")
+            # You could choose to block the participant here or just flag it
+            # For now, we'll continue but log the warning
+    
     participant = create_new_participant()
     
     # Store Prolific information if provided
@@ -325,6 +552,10 @@ async def start_survey(
             "study_id": study_id,
             "session_id": session_id
         }
+        
+        # Store session manipulation check results
+        participant.responses["session_manipulation_check"] = detect_session_manipulation(participant.id, prolific_pid)
+        
         logger.info(f"Starting survey with Prolific participant {prolific_pid}")
         logger.info(f"Prolific info stored: {participant.responses['prolific_info']}")
     else:
@@ -338,11 +569,15 @@ async def start_survey(
 @app.get("/demographics", response_class=HTMLResponse)
 async def demographics_form(request: Request, participant: Participant = Depends(get_participant_from_session)):
     """Demographics data collection form."""
-    if not participant:
-        return RedirectResponse(url="/", status_code=303)
+    # Step validation: Only allow access to demographics (step 0)
+    if not validate_step_access(participant, 0):
+        redirect_url = get_correct_step_redirect(participant)
+        logger.warning(f"Unauthorized access attempt to demographics. Redirecting to {redirect_url}")
+        return RedirectResponse(url=redirect_url, status_code=303)
     
-    if participant.current_step > 0:
-        return RedirectResponse(url=f"/{REQUIRED_STEPS[participant.current_step]}", status_code=303)
+    # Track step start time
+    if participant:
+        participant.step_times["demographics"] = datetime.now().isoformat()
     
     return templates.TemplateResponse("demographics.html", {"request": request})
 
@@ -358,6 +593,13 @@ async def submit_demographics(
     """Process demographics form submission."""
     if not participant:
         return RedirectResponse(url="/", status_code=303)
+    
+    # Validate response time
+    step_start_time = participant.step_times.get("demographics")
+    if step_start_time:
+        time_validation = validate_response_time(step_start_time, "demographics")
+        if time_validation["warning"]:
+            logger.info(f"Demographics timing warning for {participant.id}: {time_validation['warning']}")
     
     # Store demographics data
     participant.responses["demographics"] = {
@@ -384,12 +626,17 @@ async def recipe_evaluation(request: Request, step_id: int, participant: Partici
     if not participant:
         return RedirectResponse(url="/", status_code=303)
     
-    # Prevent skipping steps
-    if step_id > participant.current_step:
-        return RedirectResponse(url=f"/{REQUIRED_STEPS[participant.current_step]}", status_code=303)
+    # Step validation: Check if participant can access this recipe evaluation step
+    if not validate_step_access(participant, step_id):
+        redirect_url = get_correct_step_redirect(participant)
+        logger.warning(f"Unauthorized access attempt to recipe_eval_{step_id}. Redirecting to {redirect_url}")
+        return RedirectResponse(url=redirect_url, status_code=303)
     
     if step_id < 1 or step_id > NUM_RECIPES_PER_PARTICIPANT:
         raise HTTPException(status_code=404, detail="Invalid step")
+    
+    # Track step start time
+    participant.step_times[f"recipe_eval_{step_id}"] = datetime.now().isoformat()
     
     # Get recipe data
     recipe_index = participant.selected_recipes[step_id - 1]
@@ -422,7 +669,7 @@ async def submit_recipe_evaluation(
     instructions_correctness: int = Form(...),
     nutrition_correctness: int = Form(...),
     comments: str = Form(None),
-    attention_check_recipe: int = Form(...),
+    attention_check_recipe: int = Form(None),
     participant: Participant = Depends(get_participant_from_session)
 ):
     """Process recipe evaluation submission."""
@@ -433,14 +680,34 @@ async def submit_recipe_evaluation(
     if not participant:
         return RedirectResponse(url="/", status_code=303)
     
+    # Step validation: Check if participant can submit this step
+    if not validate_step_access(participant, step_id):
+        redirect_url = get_correct_step_redirect(participant)
+        logger.warning(f"Unauthorized submission attempt to recipe_eval_{step_id}. Redirecting to {redirect_url}")
+        return RedirectResponse(url=redirect_url, status_code=303)
+    
     if step_id < 1 or step_id > NUM_RECIPES_PER_PARTICIPANT:
         raise HTTPException(status_code=404, detail="Invalid step")
+    
+    # Validate response time
+    step_start_time = participant.step_times.get(f"recipe_eval_{step_id}")
+    if step_start_time:
+        time_validation = validate_response_time(step_start_time, f"recipe_eval_{step_id}")
+        if time_validation["warning"]:
+            logger.info(f"Recipe eval {step_id} timing warning for {participant.id}: {time_validation['warning']}")
+        
+        # Store response time in evaluation data
+        eval_data = {
+            "response_time_seconds": time_validation.get("time_spent_seconds")
+        }
+    else:
+        eval_data = {}
     
     # Store evaluation data
     recipe_index = participant.selected_recipes[step_id - 1]
     recipe = recipes_df.iloc[recipe_index]
     
-    participant.responses[f"recipe_eval_{step_id}"] = {
+    eval_data.update({
         "recipe_id": recipe_index,
         "recipe_name": recipe_name,
         "recipe_category": recipe["Category"],
@@ -454,9 +721,14 @@ async def submit_recipe_evaluation(
         "ingredients_correctness": ingredients_correctness,
         "instructions_correctness": instructions_correctness,
         "nutrition_correctness": nutrition_correctness,
-        "comments": comments or "",
-        "attention_check_recipe": attention_check_recipe
-    }
+        "comments": comments or ""
+    })
+    
+    # Only add attention check for step 3
+    if step_id == 3:
+        eval_data["attention_check_recipe"] = attention_check_recipe
+    
+    participant.responses[f"recipe_eval_{step_id}"] = eval_data
     
     # Update participant progress
     if step_id >= participant.current_step:
@@ -480,9 +752,14 @@ async def post_survey_form(request: Request, participant: Participant = Depends(
     if not participant:
         return RedirectResponse(url="/", status_code=303)
     
-    # Prevent skipping steps
-    if participant.current_step < NUM_RECIPES_PER_PARTICIPANT:
-        return RedirectResponse(url=f"/{REQUIRED_STEPS[participant.current_step]}", status_code=303)
+    # Step validation: Check if participant can access post-survey (step 6)
+    if not validate_step_access(participant, 6):
+        redirect_url = get_correct_step_redirect(participant)
+        logger.warning(f"Unauthorized access attempt to post_survey. Redirecting to {redirect_url}")
+        return RedirectResponse(url=redirect_url, status_code=303)
+    
+    # Track step start time
+    participant.step_times["post_survey"] = datetime.now().isoformat()
     
     return templates.TemplateResponse("post_survey.html", {"request": request})
 
@@ -510,6 +787,19 @@ async def submit_post_survey(
     if not participant:
         return RedirectResponse(url="/", status_code=303)
     
+    # Step validation: Check if participant can submit post-survey (step 6)
+    if not validate_step_access(participant, 6):
+        redirect_url = get_correct_step_redirect(participant)
+        logger.warning(f"Unauthorized submission attempt to post_survey. Redirecting to {redirect_url}")
+        return RedirectResponse(url=redirect_url, status_code=303)
+    
+    # Validate response time
+    step_start_time = participant.step_times.get("post_survey")
+    if step_start_time:
+        time_validation = validate_response_time(step_start_time, "post_survey")
+        if time_validation["warning"]:
+            logger.info(f"Post-survey timing warning for {participant.id}: {time_validation['warning']}")
+    
     # Store post-survey data
     participant.responses["post_survey"] = {
         "cooking_skills": cooking_skills,
@@ -525,7 +815,7 @@ async def submit_post_survey(
     }
     
     # Update participant progress
-    participant.current_step = NUM_RECIPES_PER_PARTICIPANT + 1
+    participant.current_step = 7  # Move to debriefing step
     
     # Save responses to CSV
     save_participant_responses(participant)
@@ -542,13 +832,20 @@ async def debriefing(request: Request, participant: Participant = Depends(get_pa
     if not participant:
         return RedirectResponse(url="/", status_code=303)
     
-    # Prevent skipping steps
-    if participant.current_step < NUM_RECIPES_PER_PARTICIPANT + 1:
-        return RedirectResponse(url=f"/{REQUIRED_STEPS[participant.current_step]}", status_code=303)
+    # Step validation: Check if participant can access debriefing (step 7)
+    if not validate_step_access(participant, 7):
+        redirect_url = get_correct_step_redirect(participant)
+        logger.warning(f"Unauthorized access attempt to debriefing. Redirecting to {redirect_url}")
+        return RedirectResponse(url=redirect_url, status_code=303)
     
     # Mark participant as completed
     participant.completed = True
     participant.responses["completed_time"] = datetime.now().isoformat()
+    
+    # Validate attention checks and log results
+    attention_check_results = validate_attention_checks(participant)
+    participant.responses["attention_check_validation"] = attention_check_results
+    logger.info(f"Attention check validation for {participant.id}: {attention_check_results}")
     
     # Save final responses
     save_participant_responses(participant)
@@ -689,7 +986,7 @@ def save_participant_responses(participant: Participant):
             "recipe_eval_1_would_make", "recipe_eval_1_ingredients_complexity", 
             "recipe_eval_1_instructions_complexity", "recipe_eval_1_ingredients_correctness", 
             "recipe_eval_1_instructions_correctness", "recipe_eval_1_nutrition_correctness", 
-            "recipe_eval_1_comments", "recipe_eval_1_attention_check_recipe",
+            "recipe_eval_1_comments", "recipe_eval_1_attention_check_recipe", "recipe_eval_1_response_time_seconds",
             
             # Recipe evaluation 2
             "recipe_eval_2_recipe_id", "recipe_eval_2_recipe_name", "recipe_eval_2_recipe_category",
@@ -698,16 +995,16 @@ def save_participant_responses(participant: Participant):
             "recipe_eval_2_would_make", "recipe_eval_2_ingredients_complexity", 
             "recipe_eval_2_instructions_complexity", "recipe_eval_2_ingredients_correctness", 
             "recipe_eval_2_instructions_correctness", "recipe_eval_2_nutrition_correctness", 
-            "recipe_eval_2_comments", "recipe_eval_2_attention_check_recipe",
+            "recipe_eval_2_comments", "recipe_eval_2_attention_check_recipe", "recipe_eval_2_response_time_seconds",
             
-            # Recipe evaluation 3
+            # Recipe evaluation 3 (with attention check)
             "recipe_eval_3_recipe_id", "recipe_eval_3_recipe_name", "recipe_eval_3_recipe_category",
             "recipe_eval_3_completeness_rating", "recipe_eval_3_healthiness_rating", 
             "recipe_eval_3_tastiness_rating", "recipe_eval_3_feasibility_rating",
             "recipe_eval_3_would_make", "recipe_eval_3_ingredients_complexity", 
             "recipe_eval_3_instructions_complexity", "recipe_eval_3_ingredients_correctness", 
             "recipe_eval_3_instructions_correctness", "recipe_eval_3_nutrition_correctness", 
-            "recipe_eval_3_comments", "recipe_eval_3_attention_check_recipe",
+            "recipe_eval_3_comments", "recipe_eval_3_attention_check_recipe", "recipe_eval_3_response_time_seconds",
             
             # Recipe evaluation 4
             "recipe_eval_4_recipe_id", "recipe_eval_4_recipe_name", "recipe_eval_4_recipe_category",
@@ -716,7 +1013,7 @@ def save_participant_responses(participant: Participant):
             "recipe_eval_4_would_make", "recipe_eval_4_ingredients_complexity", 
             "recipe_eval_4_instructions_complexity", "recipe_eval_4_ingredients_correctness", 
             "recipe_eval_4_instructions_correctness", "recipe_eval_4_nutrition_correctness", 
-            "recipe_eval_4_comments", "recipe_eval_4_attention_check_recipe",
+            "recipe_eval_4_comments", "recipe_eval_4_attention_check_recipe", "recipe_eval_4_response_time_seconds",
             
             # Recipe evaluation 5
             "recipe_eval_5_recipe_id", "recipe_eval_5_recipe_name", "recipe_eval_5_recipe_category",
@@ -725,7 +1022,7 @@ def save_participant_responses(participant: Participant):
             "recipe_eval_5_would_make", "recipe_eval_5_ingredients_complexity", 
             "recipe_eval_5_instructions_complexity", "recipe_eval_5_ingredients_correctness", 
             "recipe_eval_5_instructions_correctness", "recipe_eval_5_nutrition_correctness", 
-            "recipe_eval_5_comments",
+            "recipe_eval_5_comments", "recipe_eval_5_response_time_seconds",
             
             # Post survey
             "post_survey_cooking_skills", "post_survey_new_recipe_frequency",
@@ -757,6 +1054,8 @@ def save_participant_responses(participant: Participant):
             "start_time": participant.start_time,
             "completed": participant.completed,
             "current_step": participant.current_step,
+            "step_completed_at": datetime.now().isoformat(),
+            "last_activity_at": participant.last_activity,
             "responses": participant.responses,
             "selected_recipes": participant.selected_recipes
         }
@@ -766,3 +1065,44 @@ def save_participant_responses(participant: Participant):
         
     except Exception as e:
         logger.error(f"Error saving participant responses: {e}")
+
+@app.get("/admin/quality_metrics")
+async def admin_quality_metrics(request: Request):
+    """Admin endpoint: Get data quality metrics."""
+    try:
+        from app.db import get_quality_metrics
+        metrics = get_quality_metrics()
+        return {"status": "success", "metrics": metrics}
+    except Exception as e:
+        logger.error(f"Error getting quality metrics: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/admin/participants_quality")
+async def admin_participants_quality(request: Request):
+    """Admin endpoint: Get all participants with quality flags."""
+    try:
+        from app.db import get_participants_with_quality_flags
+        participants = get_participants_with_quality_flags()
+        return {"status": "success", "participants": participants}
+    except Exception as e:
+        logger.error(f"Error getting participants with quality flags: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/admin/export_data")
+async def admin_export_data(request: Request):
+    """Admin endpoint: Export data to CSV files."""
+    try:
+        from app.db import export_to_csv
+        success = export_to_csv()
+        if success:
+            return {"status": "success", "message": "Data exported to CSV files in data/normalized/"}
+        else:
+            return {"status": "error", "message": "Failed to export data"}
+    except Exception as e:
+        logger.error(f"Error exporting data: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    """Admin dashboard for monitoring survey data quality."""
+    return templates.TemplateResponse("admin_dashboard.html", {"request": request})

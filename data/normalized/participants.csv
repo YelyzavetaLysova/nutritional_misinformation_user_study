@@ -1,0 +1,2 @@
+participant_id,prolific_pid,study_id,session_id,start_time,completed_time,completed,time_spent_minutes,current_step,step_completed_at,last_activity_at,age,gender,education
+p_20251014143017_1245,TEST_PARTICIPANT_123,TEST_RECIPE_STUDY,TEST_SESSION_456,2025-10-14T14:30:17.607016,,0,,4,2025-10-14T14:31:52.242181,2025-10-14T14:31:52.243492,25-34,female,some_college

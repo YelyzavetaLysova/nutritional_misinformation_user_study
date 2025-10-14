@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Admin Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #007bff;
+        }
+        .metric-card.warning {
+            border-left-color: #ffc107;
+        }
+        .metric-card.danger {
+            border-left-color: #dc3545;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .metric-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section h2 {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .table th, .table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .flag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .flag.pass { background: #d4edda; color: #155724; }
+        .flag.fail { background: #f8d7da; color: #721c24; }
+        .flag.warning { background: #fff3cd; color: #856404; }
+        #loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Survey Admin Dashboard</h1>
+        
+        <div class="section">
+            <h2>Data Quality Metrics</h2>
+            <div id="loading">Loading metrics...</div>
+            <div id="metrics-container" style="display: none;">
+                <div class="metrics-grid" id="metrics-grid"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Actions</h2>
+            <button class="btn" onclick="refreshData()">Refresh Data</button>
+            <button class="btn" onclick="exportData()">Export to CSV</button>
+            <button class="btn" onclick="loadParticipants()">Load Participant Details</button>
+        </div>
+
+        <div class="section">
+            <h2>Recent Participants</h2>
+            <div id="participants-container">
+                <p>Click "Load Participant Details" to view recent participants.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMetrics = null;
+        let currentParticipants = null;
+
+        async function loadMetrics() {
+            try {
+                const response = await fetch('/admin/quality_metrics');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentMetrics = data.metrics;
+                    displayMetrics(data.metrics);
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('metrics-container').style.display = 'block';
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                document.getElementById('loading').innerHTML = 'Error loading metrics: ' + error.message;
+            }
+        }
+
+        function displayMetrics(metrics) {
+            const grid = document.getElementById('metrics-grid');
+            grid.innerHTML = '';
+
+            const metricCards = [
+                { label: 'Total Participants', value: metrics.total_participants, key: 'total_participants' },
+                { label: 'Completed', value: metrics.completed_participants, key: 'completed_participants' },
+                { label: 'Prolific Participants', value: metrics.prolific_participants, key: 'prolific_participants' },
+                { label: 'Attention Check Failures', value: metrics.attention_check_failures, key: 'attention_check_failures', warning: true },
+                { label: 'Duplicate Prolific IDs', value: metrics.duplicate_prolific_ids, key: 'duplicate_prolific_ids', danger: true },
+                { label: 'Fast Responses', value: metrics.fast_responses, key: 'fast_responses', warning: true },
+                { label: 'Slow Responses', value: metrics.slow_responses, key: 'slow_responses', warning: true }
+            ];
+
+            metricCards.forEach(metric => {
+                const card = document.createElement('div');
+                card.className = 'metric-card';
+                if (metric.warning && metric.value > 0) card.className += ' warning';
+                if (metric.danger && metric.value > 0) card.className += ' danger';
+
+                card.innerHTML = `
+                    <div class="metric-value">${metric.value}</div>
+                    <div class="metric-label">${metric.label}</div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadParticipants() {
+            const container = document.getElementById('participants-container');
+            container.innerHTML = '<p>Loading participants...</p>';
+
+            try {
+                const response = await fetch('/admin/participants_quality');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    currentParticipants = data.participants;
+                    displayParticipants(data.participants);
+                } else {
+                    throw new Error(data.message);
+                }
+            } catch (error) {
+                container.innerHTML = '<p>Error loading participants: ' + error.message + '</p>';
+            }
+        }
+
+        function displayParticipants(participants) {
+            const container = document.getElementById('participants-container');
+            
+            if (participants.length === 0) {
+                container.innerHTML = '<p>No participants found.</p>';
+                return;
+            }
+
+            let tableHTML = `
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Participant ID</th>
+                            <th>Prolific ID</th>
+                            <th>Status</th>
+                            <th>Time (min)</th>
+                            <th>Attention Checks</th>
+                            <th>Prolific Duplicates</th>
+                            <th>Started</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            participants.slice(0, 20).forEach(p => {
+                const status = p.completed ? 'Completed' : 'In Progress';
+                const timeSpent = p.time_spent_minutes ? p.time_spent_minutes.toFixed(1) : 'N/A';
+                const attentionCheck = p.attention_check_passed ? 
+                    '<span class="flag pass">PASS</span>' : 
+                    '<span class="flag fail">FAIL</span>';
+                const duplicates = p.has_prolific_duplicates ? 
+                    `<span class="flag warning">${p.prolific_duplicate_count} sessions</span>` : 
+                    '<span class="flag pass">None</span>';
+                const startTime = new Date(p.start_time).toLocaleString();
+
+                tableHTML += `
+                    <tr>
+                        <td>${p.participant_id}</td>
+                        <td>${p.prolific_pid || 'N/A'}</td>
+                        <td>${status}</td>
+                        <td>${timeSpent}</td>
+                        <td>${attentionCheck}</td>
+                        <td>${duplicates}</td>
+                        <td>${startTime}</td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            container.innerHTML = tableHTML;
+        }
+
+        async function exportData() {
+            try {
+                const response = await fetch('/admin/export_data');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    alert('Data exported successfully to data/normalized/ directory');
+                } else {
+                    alert('Export failed: ' + data.message);
+                }
+            } catch (error) {
+                alert('Export error: ' + error.message);
+            }
+        }
+
+        function refreshData() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('metrics-container').style.display = 'none';
+            loadMetrics();
+            if (currentParticipants) {
+                loadParticipants();
+            }
+        }
+
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMetrics();
+        });
+    </script>
+</body>
+</html>
