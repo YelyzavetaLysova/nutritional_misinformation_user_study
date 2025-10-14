@@ -414,6 +414,47 @@ button {
     flex: 1;
 }
 
+/* Checkbox group styling for multiple selections */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin: 1rem 0;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    background-color: #fff;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.checkbox-option:hover {
+    border-color: var(--secondary-color);
+    background-color: #f5f9ff;
+}
+
+.checkbox-option input[type="checkbox"] {
+    margin-right: 0.8rem;
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+.checkbox-option input[type="checkbox"]:checked + label {
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+
+.checkbox-option label {
+    cursor: pointer;
+    flex: 1;
+    margin: 0;
+}
+
 /* Rating scales */
 .rating-group {
     margin-bottom: 2.5rem;

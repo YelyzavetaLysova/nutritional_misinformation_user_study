@@ -125,8 +125,7 @@ def get_participant_from_session(request: Request) -> Optional[Participant]:
         responses["demographics"] = {
             "age": participant_row.get("age"),
             "gender": participant_row.get("gender"),
-            "education": participant_row.get("education"),
-            "nationality": participant_row.get("nationality")
+            "education": participant_row.get("education")
         }
         
         # Add evaluations to responses
@@ -136,16 +135,16 @@ def get_participant_from_session(request: Request) -> Optional[Participant]:
                 "recipe_id": eval_data.get("recipe_id"),
                 "recipe_name": eval_data.get("recipe_name"),
                 "recipe_category": eval_data.get("recipe_category"),
-                "clarity_rating": eval_data.get("clarity_rating"),
-                "tastiness_rating": eval_data.get("tastiness_rating"),
                 "completeness_rating": eval_data.get("completeness_rating"),
-                "correctness_rating": eval_data.get("correctness_rating"),
+                "healthiness_rating": eval_data.get("healthiness_rating"),
+                "tastiness_rating": eval_data.get("tastiness_rating"),
+                "feasibility_rating": eval_data.get("feasibility_rating"),
+                "would_make": eval_data.get("would_make"),
+                "ingredients_complexity": eval_data.get("ingredients_complexity"),
+                "instructions_complexity": eval_data.get("instructions_complexity"),
                 "ingredients_correctness": eval_data.get("ingredients_correctness"),
                 "instructions_correctness": eval_data.get("instructions_correctness"),
                 "nutrition_correctness": eval_data.get("nutrition_correctness"),
-                "feasibility_rating": eval_data.get("feasibility_rating"),
-                "quality_rating": eval_data.get("quality_rating"),
-                "would_make": eval_data.get("would_make"),
                 "comments": eval_data.get("comments", "")
             }
             
@@ -155,14 +154,24 @@ def get_participant_from_session(request: Request) -> Optional[Participant]:
         
         # Add post survey if available
         if post_survey:
+            # Handle recipe_factors as JSON string from database
+            recipe_factors = post_survey.get("recipe_factors", "[]")
+            if isinstance(recipe_factors, str):
+                try:
+                    import json
+                    recipe_factors = json.loads(recipe_factors)
+                except:
+                    recipe_factors = []
+            
             responses["post_survey"] = {
                 "cooking_skills": post_survey.get("cooking_skills"),
                 "new_recipe_frequency": post_survey.get("new_recipe_frequency"),
-                "preferred_source": post_survey.get("preferred_source"),
+                "recipe_factors": recipe_factors,
+                "recipe_usage_frequency": post_survey.get("recipe_usage_frequency"),
                 "cooking_frequency": post_survey.get("cooking_frequency"),
                 "trust_human_recipes": post_survey.get("trust_human_recipes"),
                 "trust_ai_recipes": post_survey.get("trust_ai_recipes"),
-                "ai_usage": post_survey.get("ai_usage"),
+                "ai_recipe_usage": post_survey.get("ai_recipe_usage"),
                 "comments": post_survey.get("comments", "")
             }
         
@@ -344,7 +353,6 @@ async def submit_demographics(
     age: str = Form(...),
     gender: str = Form(...),
     education: str = Form(...),
-    nationality: str = Form(...),
     participant: Participant = Depends(get_participant_from_session)
 ):
     """Process demographics form submission."""
@@ -355,8 +363,7 @@ async def submit_demographics(
     participant.responses["demographics"] = {
         "age": age,
         "gender": gender,
-        "education": education,
-        "nationality": nationality
+        "education": education
     }
     
     # Update participant progress
@@ -404,24 +411,25 @@ async def submit_recipe_evaluation(
     request: Request,
     step_id: int,
     recipe_name: str = Form(...),
-    clarity_rating: int = Form(...),
-    tastiness_rating: int = Form(...),
     completeness_rating: int = Form(...),
-    correctness_rating: int = Form(...),
+    healthiness_rating: int = Form(...),
+    tastiness_rating: int = Form(...),
+    feasibility_rating: int = Form(...),
+    would_make: int = Form(...),
+    ingredients_complexity: int = Form(...),
+    instructions_complexity: int = Form(...),
     ingredients_correctness: int = Form(...),
     instructions_correctness: int = Form(...),
     nutrition_correctness: int = Form(...),
-    feasibility_rating: int = Form(...),
-    quality_rating: int = Form(...),
-    would_make: int = Form(...),
     comments: str = Form(None),
+    attention_check_recipe: int = Form(...),
     participant: Participant = Depends(get_participant_from_session)
 ):
     """Process recipe evaluation submission."""
     # Log form data for debugging
     form_data = await request.form()
     logger.info(f"Recipe evaluation form submission data for step {step_id}: {dict(form_data)}")
-    """Process recipe evaluation submission."""
+    
     if not participant:
         return RedirectResponse(url="/", status_code=303)
     
@@ -436,17 +444,18 @@ async def submit_recipe_evaluation(
         "recipe_id": recipe_index,
         "recipe_name": recipe_name,
         "recipe_category": recipe["Category"],
-        "clarity_rating": clarity_rating,
-        "tastiness_rating": tastiness_rating,
         "completeness_rating": completeness_rating,
-        "correctness_rating": correctness_rating,
+        "healthiness_rating": healthiness_rating,
+        "tastiness_rating": tastiness_rating,
+        "feasibility_rating": feasibility_rating,
+        "would_make": would_make,
+        "ingredients_complexity": ingredients_complexity,
+        "instructions_complexity": instructions_complexity,
         "ingredients_correctness": ingredients_correctness,
         "instructions_correctness": instructions_correctness,
         "nutrition_correctness": nutrition_correctness,
-        "feasibility_rating": feasibility_rating,
-        "quality_rating": quality_rating,
-        "would_make": would_make,
-        "comments": comments or ""
+        "comments": comments or "",
+        "attention_check_recipe": attention_check_recipe
     }
     
     # Update participant progress
@@ -483,12 +492,14 @@ async def submit_post_survey(
     request: Request,
     cooking_skills: int = Form(...),
     new_recipe_frequency: str = Form(...),
-    preferred_source: str = Form(...),
+    recipe_factors: List[str] = Form([]),
+    recipe_usage_frequency: str = Form(...),
     cooking_frequency: str = Form(...),
     trust_human_recipes: int = Form(...),
     trust_ai_recipes: int = Form(...),
-    ai_usage: str = Form(...),
+    ai_recipe_usage: str = Form(...),
     comments: str = Form(None),
+    attention_check_post: str = Form(...),
     participant: Participant = Depends(get_participant_from_session)
 ):
     """Process post-survey submission."""
@@ -503,12 +514,14 @@ async def submit_post_survey(
     participant.responses["post_survey"] = {
         "cooking_skills": cooking_skills,
         "new_recipe_frequency": new_recipe_frequency,
-        "preferred_source": preferred_source,
+        "recipe_factors": recipe_factors,
+        "recipe_usage_frequency": recipe_usage_frequency,
         "cooking_frequency": cooking_frequency,
         "trust_human_recipes": trust_human_recipes,
         "trust_ai_recipes": trust_ai_recipes,
-        "ai_usage": ai_usage,
-        "comments": comments or ""
+        "ai_recipe_usage": ai_recipe_usage,
+        "comments": comments or "",
+        "attention_check_post": attention_check_post
     }
     
     # Update participant progress
@@ -661,7 +674,6 @@ def save_participant_responses(participant: Participant):
             "demographics_age",
             "demographics_gender",
             "demographics_education",
-            "demographics_nationality",
             
             # Recipe metadata
             "recipe_1_id", "recipe_1_name", "recipe_1_category",
@@ -672,49 +684,54 @@ def save_participant_responses(participant: Participant):
             
             # Recipe evaluation 1
             "recipe_eval_1_recipe_id", "recipe_eval_1_recipe_name", "recipe_eval_1_recipe_category",
-            "recipe_eval_1_clarity_rating", "recipe_eval_1_tastiness_rating", 
-            "recipe_eval_1_completeness_rating", "recipe_eval_1_correctness_rating",
-            "recipe_eval_1_ingredients_correctness", "recipe_eval_1_instructions_correctness",
-            "recipe_eval_1_nutrition_correctness", "recipe_eval_1_feasibility_rating",
-            "recipe_eval_1_quality_rating", "recipe_eval_1_would_make", "recipe_eval_1_comments",
+            "recipe_eval_1_completeness_rating", "recipe_eval_1_healthiness_rating", 
+            "recipe_eval_1_tastiness_rating", "recipe_eval_1_feasibility_rating",
+            "recipe_eval_1_would_make", "recipe_eval_1_ingredients_complexity", 
+            "recipe_eval_1_instructions_complexity", "recipe_eval_1_ingredients_correctness", 
+            "recipe_eval_1_instructions_correctness", "recipe_eval_1_nutrition_correctness", 
+            "recipe_eval_1_comments", "recipe_eval_1_attention_check_recipe",
             
             # Recipe evaluation 2
             "recipe_eval_2_recipe_id", "recipe_eval_2_recipe_name", "recipe_eval_2_recipe_category",
-            "recipe_eval_2_clarity_rating", "recipe_eval_2_tastiness_rating", 
-            "recipe_eval_2_completeness_rating", "recipe_eval_2_correctness_rating",
-            "recipe_eval_2_ingredients_correctness", "recipe_eval_2_instructions_correctness",
-            "recipe_eval_2_nutrition_correctness", "recipe_eval_2_feasibility_rating",
-            "recipe_eval_2_quality_rating", "recipe_eval_2_would_make", "recipe_eval_2_comments",
+            "recipe_eval_2_completeness_rating", "recipe_eval_2_healthiness_rating", 
+            "recipe_eval_2_tastiness_rating", "recipe_eval_2_feasibility_rating",
+            "recipe_eval_2_would_make", "recipe_eval_2_ingredients_complexity", 
+            "recipe_eval_2_instructions_complexity", "recipe_eval_2_ingredients_correctness", 
+            "recipe_eval_2_instructions_correctness", "recipe_eval_2_nutrition_correctness", 
+            "recipe_eval_2_comments", "recipe_eval_2_attention_check_recipe",
             
             # Recipe evaluation 3
             "recipe_eval_3_recipe_id", "recipe_eval_3_recipe_name", "recipe_eval_3_recipe_category",
-            "recipe_eval_3_clarity_rating", "recipe_eval_3_tastiness_rating", 
-            "recipe_eval_3_completeness_rating", "recipe_eval_3_correctness_rating",
-            "recipe_eval_3_ingredients_correctness", "recipe_eval_3_instructions_correctness",
-            "recipe_eval_3_nutrition_correctness", "recipe_eval_3_feasibility_rating",
-            "recipe_eval_3_quality_rating", "recipe_eval_3_would_make", "recipe_eval_3_comments",
+            "recipe_eval_3_completeness_rating", "recipe_eval_3_healthiness_rating", 
+            "recipe_eval_3_tastiness_rating", "recipe_eval_3_feasibility_rating",
+            "recipe_eval_3_would_make", "recipe_eval_3_ingredients_complexity", 
+            "recipe_eval_3_instructions_complexity", "recipe_eval_3_ingredients_correctness", 
+            "recipe_eval_3_instructions_correctness", "recipe_eval_3_nutrition_correctness", 
+            "recipe_eval_3_comments", "recipe_eval_3_attention_check_recipe",
             
             # Recipe evaluation 4
             "recipe_eval_4_recipe_id", "recipe_eval_4_recipe_name", "recipe_eval_4_recipe_category",
-            "recipe_eval_4_clarity_rating", "recipe_eval_4_tastiness_rating", 
-            "recipe_eval_4_completeness_rating", "recipe_eval_4_correctness_rating",
-            "recipe_eval_4_ingredients_correctness", "recipe_eval_4_instructions_correctness",
-            "recipe_eval_4_nutrition_correctness", "recipe_eval_4_feasibility_rating",
-            "recipe_eval_4_quality_rating", "recipe_eval_4_would_make", "recipe_eval_4_comments",
+            "recipe_eval_4_completeness_rating", "recipe_eval_4_healthiness_rating", 
+            "recipe_eval_4_tastiness_rating", "recipe_eval_4_feasibility_rating",
+            "recipe_eval_4_would_make", "recipe_eval_4_ingredients_complexity", 
+            "recipe_eval_4_instructions_complexity", "recipe_eval_4_ingredients_correctness", 
+            "recipe_eval_4_instructions_correctness", "recipe_eval_4_nutrition_correctness", 
+            "recipe_eval_4_comments", "recipe_eval_4_attention_check_recipe",
             
             # Recipe evaluation 5
             "recipe_eval_5_recipe_id", "recipe_eval_5_recipe_name", "recipe_eval_5_recipe_category",
-            "recipe_eval_5_clarity_rating", "recipe_eval_5_tastiness_rating", 
-            "recipe_eval_5_completeness_rating", "recipe_eval_5_correctness_rating",
-            "recipe_eval_5_ingredients_correctness", "recipe_eval_5_instructions_correctness",
-            "recipe_eval_5_nutrition_correctness", "recipe_eval_5_feasibility_rating",
-            "recipe_eval_5_quality_rating", "recipe_eval_5_would_make", "recipe_eval_5_comments",
+            "recipe_eval_5_completeness_rating", "recipe_eval_5_healthiness_rating", 
+            "recipe_eval_5_tastiness_rating", "recipe_eval_5_feasibility_rating",
+            "recipe_eval_5_would_make", "recipe_eval_5_ingredients_complexity", 
+            "recipe_eval_5_instructions_complexity", "recipe_eval_5_ingredients_correctness", 
+            "recipe_eval_5_instructions_correctness", "recipe_eval_5_nutrition_correctness", 
+            "recipe_eval_5_comments",
             
             # Post survey
             "post_survey_cooking_skills", "post_survey_new_recipe_frequency",
-            "post_survey_preferred_source", "post_survey_cooking_frequency",
+            "post_survey_recipe_factors", "post_survey_recipe_usage_frequency", "post_survey_cooking_frequency",
             "post_survey_trust_human_recipes", "post_survey_trust_ai_recipes",
-            "post_survey_ai_usage", "post_survey_comments"
+            "post_survey_ai_recipe_usage", "post_survey_comments", "post_survey_attention_check_post"
         ]
         
         # Get all keys from flattened data that might not be in our ordered list

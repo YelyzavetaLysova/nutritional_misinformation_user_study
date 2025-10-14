@@ -57,16 +57,46 @@
                 </div>
 
                 <div class="rating-group correctness-details">
-                    <label>What's most important to you when deciding whether to try a recipe?</label>
+                    <label>What's most important to you when deciding whether to try a recipe? (Select all that apply)</label>
                     <div class="rating-scale">
                         <div style="width: 100%;">
-                            <select id="preferred_source" name="preferred_source" required>
-                                <option value="" selected disabled>Select your preference</option>
-                                <option value="clarity">Clear instructions</option>
-                                <option value="simplicity">Simple preparation</option>
-                                <option value="ingredients">Common ingredients I already have</option>
-                                <option value="nutritional">Nutritional value</option>
-                                <option value="appearance">How the final dish will look</option>
+                            <div class="checkbox-group">
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="clarity" name="recipe_factors" value="clarity">
+                                    <label for="clarity">Clear instructions</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="simplicity" name="recipe_factors" value="simplicity">
+                                    <label for="simplicity">Simple preparation</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="ingredients" name="recipe_factors" value="ingredients">
+                                    <label for="ingredients">Common ingredients I already have</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="nutritional" name="recipe_factors" value="nutritional">
+                                    <label for="nutritional">Nutritional value</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="appearance" name="recipe_factors" value="appearance">
+                                    <label for="appearance">How the final dish will look</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>How often do you use recipes to cook meals?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="recipe_usage_frequency" name="recipe_usage_frequency" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="always">Always - I follow recipes for every meal</option>
+                                <option value="mostly">Mostly - I use recipes for most meals</option>
+                                <option value="sometimes">Sometimes - I use recipes occasionally</option>
+                                <option value="rarely">Rarely - I prefer to cook without recipes</option>
+                                <option value="never">Never - I don't use recipes</option>
                             </select>
                         </div>
                     </div>
@@ -132,18 +162,17 @@
                 </div>
                 
                 <div class="rating-group correctness-details">
-                    <label>How frequently do you use AI platforms like ChatGPT, DeepSeek, or Gemini Assistant?</label>
+                    <label>How often do you use AI to generate recipes?</label>
                     <div class="rating-scale">
                         <div style="width: 100%;">
-                            <select id="ai_usage" name="ai_usage" required>
+                            <select id="ai_recipe_usage" name="ai_recipe_usage" required>
                                 <option value="" selected disabled>Select an option</option>
-                                <option value="daily">Daily</option>
-                                <option value="few_times_week">Several times a week</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="rarely">Rarely</option>
-                                <option value="never">Never used</option>
-                                <option value="not_familiar">Not familiar with these platforms</option>
+                                <option value="very_often">Very often - Multiple times a week</option>
+                                <option value="often">Often - About once a week</option>
+                                <option value="sometimes">Sometimes - A few times a month</option>
+                                <option value="rarely">Rarely - A few times a year</option>
+                                <option value="never">Never - I don't use AI for recipes</option>
+                                <option value="not_aware">I wasn't aware AI could generate recipes</option>
                             </select>
                         </div>
                     </div>
@@ -154,6 +183,21 @@
                     <div class="rating-scale">
                         <div style="width: 100%;">
                             <textarea id="comments" name="comments" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label style="color: #d73502; font-weight: bold;">Attention Check: Please select "Gemini" in this question. This is an attention check.</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="attention_check_post" name="attention_check_post" required>
+                                <option value="" selected disabled>Select an AI provider</option>
+                                <option value="chatgpt">ChatGPT</option>
+                                <option value="claude">Claude</option>
+                                <option value="gemini">Gemini</option>
+                                <option value="copilot">Microsoft Copilot</option>
+                            </select>
                         </div>
                     </div>
                 </div>
