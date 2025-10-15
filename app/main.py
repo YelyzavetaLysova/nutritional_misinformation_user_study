@@ -82,9 +82,9 @@ except Exception as e:
 # Constants
 NUM_RECIPES_PER_PARTICIPANT = 5
 REQUIRED_STEPS = ["demographics", "recipe_eval_1", "recipe_eval_2", "recipe_eval_3", "recipe_eval_4", "recipe_eval_5", "post_survey", "debriefing"]
-SESSION_TIMEOUT_MINUTES = 60  # 60-minute session timeout
-MIN_RESPONSE_TIME_SECONDS = 30  # Minimum time per recipe evaluation
-MAX_RESPONSE_TIME_MINUTES = 10  # Maximum time per recipe evaluation
+SESSION_TIMEOUT_MINUTES = 30  # 30-minute session timeout (1.5x expected survey time)
+MIN_RESPONSE_TIME_SECONDS = 20  # Minimum time per recipe evaluation (reduced for 20min survey)
+MAX_RESPONSE_TIME_MINUTES = 6   # Maximum time per recipe evaluation (adjusted for 20min survey)
 
 # Step mapping for validation
 STEP_ROUTES = {
@@ -260,38 +260,6 @@ def detect_session_manipulation(participant_id: str, prolific_pid: str = None) -
         results["warning"] = "Could not check for session manipulation"
     
     return results
-    """
-    Validate response time for a step.
-    Returns dict with validation info.
-    """
-    result = {
-        "valid": True,
-        "time_spent_seconds": None,
-        "warning": None
-    }
-    
-    try:
-        start_dt = datetime.fromisoformat(start_time)
-        end_dt = datetime.now()
-        time_spent = (end_dt - start_dt).total_seconds()
-        result["time_spent_seconds"] = time_spent
-        
-        # Check for suspiciously fast responses on recipe evaluations
-        if step_type.startswith("recipe_eval") and time_spent < MIN_RESPONSE_TIME_SECONDS:
-            result["valid"] = False
-            result["warning"] = f"Response too fast: {time_spent:.1f}s (minimum: {MIN_RESPONSE_TIME_SECONDS}s)"
-            logger.warning(f"Fast response detected: {time_spent:.1f}s for {step_type}")
-        
-        # Check for suspiciously slow responses
-        elif time_spent > (MAX_RESPONSE_TIME_MINUTES * 60):
-            result["warning"] = f"Response very slow: {time_spent/60:.1f}min (maximum expected: {MAX_RESPONSE_TIME_MINUTES}min)"
-            logger.warning(f"Slow response detected: {time_spent/60:.1f}min for {step_type}")
-        
-    except Exception as e:
-        logger.error(f"Error validating response time: {e}")
-        result["warning"] = "Could not validate response time"
-    
-    return result
 
 
 def get_participant_from_session(request: Request) -> Optional[Participant]:

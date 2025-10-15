@@ -4,10 +4,10 @@
 
 ### **1. Comprehensive Security System**
 - **Step Validation**: Prevents participants from skipping steps or accessing unauthorized pages
-- **Session Timeout**: 60-minute automatic session expiry with activity tracking
+- **Session Timeout**: 30-minute automatic session expiry with activity tracking (1.5x expected survey time)
 - **Response Time Analysis**: 
-  - Minimum 30 seconds for recipe evaluations (flags rushed responses)
-  - Maximum 10 minutes expected (flags unusually slow responses)
+  - Minimum 20 seconds for recipe evaluations (flags rushed responses)
+  - Maximum 6 minutes expected per recipe (flags unusually slow responses)
   - All timing data captured for analysis
 
 ### **2. Attention Checks & Quality Control**
