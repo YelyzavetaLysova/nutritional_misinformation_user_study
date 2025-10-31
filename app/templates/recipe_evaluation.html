@@ -32,17 +32,25 @@
                     {% endif %}
                     
                     <div class="recipe-section">
-                        <h3>Ingredients</h3>
-                        <p>{{ recipe["Ingredients"] }}</p>
+                        <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 8px;">Ingredients</h2>
+                        <ul style="margin-left: 20px;">
+                            {% for ingredient in recipe["Ingredients_list"] %}
+                            <li>{{ ingredient }}</li>
+                            {% endfor %}
+                        </ul>
                     </div>
                     
                     <div class="recipe-section">
-                        <h3>Instructions</h3>
-                        <p>{{ recipe["Instructions"] }}</p>
+                        <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 8px;">Instructions</h2>
+                        <ol style="margin-left: 20px;">
+                            {% for instruction in recipe["Instructions_list"] %}
+                            <li>{{ instruction }}</li>
+                            {% endfor %}
+                        </ol>
                     </div>
                     
                     <div class="recipe-nutrition">
-                        <h3>Nutrition Information</h3>
+                        <h2 style="font-size: 1.3em; font-weight: bold; margin-bottom: 8px;">Nutrition Information</h2>
                         <ul>
                             <li><strong>Calories:</strong> {{ recipe["Energy(kcal)"] }}</li>
                             <li><strong>Protein:</strong> {{ recipe["Protein(g)"] }}g</li>
@@ -64,175 +72,63 @@
             
             <form action="/recipe_eval_{{ step }}" method="post" class="survey-form">
                 <input type="hidden" name="recipe_name" value="{{ recipe['Recipe Name'] }}">
-                
-                <!-- Question 1: Does the recipe include all needed information to cook it? -->
+                <!-- 1. Completeness (3 sub-questions, styled block) -->
                 <div class="rating-group correctness-details">
-                    <label>1. Does the recipe include all needed information to cook it?</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not at all complete</span>
-                                <div style="flex: 1;"></div>
-                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very complete</span>
-                            </div>
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="completeness_{{ i }}" name="completeness_rating" value="{{ i }}" required>
-                                    <label for="completeness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Question 2: How would you rate healthiness of this recipe? -->
-                <div class="rating-group correctness-details">
-                    <label>2. How would you rate healthiness of this recipe?</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not at all healthy</span>
-                                <div style="flex: 1;"></div>
-                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very healthy</span>
-                            </div>
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="healthiness_{{ i }}" name="healthiness_rating" value="{{ i }}" required>
-                                    <label for="healthiness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Question 3: How tasty do you think this recipe would be? -->
-                <div class="rating-group correctness-details">
-                    <label>3. How tasty do you think this recipe would be?</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not at all tasty</span>
-                                <div style="flex: 1;"></div>
-                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very tasty</span>
-                            </div>
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="tastiness_{{ i }}" name="tastiness_rating" value="{{ i }}" required>
-                                    <label for="tastiness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Question 4: How feasible would it be for you to cook this recipe at home? -->
-                <div class="rating-group correctness-details">
-                    <label>4. How feasible would it be for you to cook this recipe at home?</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not at all feasible</span>
-                                <div style="flex: 1;"></div>
-                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very feasible</span>
-                            </div>
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="feasibility_{{ i }}" name="feasibility_rating" value="{{ i }}" required>
-                                    <label for="feasibility_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Question 5: How likely would you be to try cooking this recipe in the future? -->
-                <div class="rating-group correctness-details">
-                    <label>5. How likely would you be to try cooking this recipe in the future?</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very unlikely</span>
-                                <div style="flex: 1;"></div>
-                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very likely</span>
-                            </div>
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="would_make_{{ i }}" name="would_make" value="{{ i }}" required>
-                                    <label for="would_make_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                {% if step == 3 %}
-                <!-- Attention Check Question (only for step 3) -->
-                <div class="rating-group correctness-details">
-                    <label>How confident are you in your answer? Please select "7" on the scale below. This is an attention check.</label>
-                    <div class="rating-scale">
-                        <div style="width: 100%;">
-                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                {% for i in range(1, 8) %}
-                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                    <input type="radio" id="attention_check_recipe_{{ i }}" name="attention_check_recipe" value="{{ i }}" required>
-                                    <label for="attention_check_recipe_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <!-- Question 6: Complexity ratings -->
-                <div class="rating-group correctness-details">
-                    <label>6. Complexity: Ingredients list / Instructions - "Rate the complexity of each component: ingredients, instructions"</label>
-                    
+                    <label>1. Completeness</label>
                     <div class="subrating">
-                        <label>Ingredients list complexity:</label>
+                        <label>The recipe includes all the information needed to cook it.</label>
                         <div class="rating-scale">
                             <div style="width: 100%;">
                                 <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very simple</span>
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
                                     <div style="flex: 1;"></div>
-                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very complex</span>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
                                 </div>
                                 <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                    {% for i in range(1, 8) %}
+                                    {% for i in range(1, 6) %}
                                     <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                        <input type="radio" id="ingredients_complexity_{{ i }}" name="ingredients_complexity" value="{{ i }}" required>
-                                        <label for="ingredients_complexity_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                        <input type="radio" id="completeness_info_{{ i }}" name="completeness_info_rating" value="{{ i }}" required>
+                                        <label for="completeness_info_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
                                     </div>
                                     {% endfor %}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="subrating">
-                        <label>Instructions complexity:</label>
+                        <label>All ingredients and quantities are listed clearly.</label>
                         <div class="rating-scale">
                             <div style="width: 100%;">
                                 <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very simple</span>
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
                                     <div style="flex: 1;"></div>
-                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very complex</span>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
                                 </div>
                                 <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                    {% for i in range(1, 8) %}
+                                    {% for i in range(1, 6) %}
                                     <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                        <input type="radio" id="instructions_complexity_{{ i }}" name="instructions_complexity" value="{{ i }}" required>
-                                        <label for="instructions_complexity_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                        <input type="radio" id="completeness_ingredients_{{ i }}" name="completeness_ingredients_rating" value="{{ i }}" required>
+                                        <label for="completeness_ingredients_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subrating">
+                        <label>The preparation steps are complete and easy to follow.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="completeness_steps_{{ i }}" name="completeness_steps_rating" value="{{ i }}" required>
+                                        <label for="completeness_steps_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -240,67 +136,24 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Question 7: Correctness ratings -->
+
+                <!-- 2. Healthiness -->
                 <div class="rating-group correctness-details">
-                    <label>7. Correctness: Ingredients list / Instructions / Nutrition information - "Rate the correctness of each component: ingredients, instructions"</label>
-                    
+                    <label>2. Healthiness</label>
                     <div class="subrating">
-                        <label>Ingredients list correctness:</label>
+                        <label>How would you rate the healthiness of this recipe?</label>
                         <div class="rating-scale">
                             <div style="width: 100%;">
                                 <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very incorrect</span>
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very unhealthy</span>
                                     <div style="flex: 1;"></div>
-                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very correct</span>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very healthy</span>
                                 </div>
                                 <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                    {% for i in range(1, 8) %}
+                                    {% for i in range(1, 6) %}
                                     <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                        <input type="radio" id="ingredients_correctness_{{ i }}" name="ingredients_correctness" value="{{ i }}" required>
-                                        <label for="ingredients_correctness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="subrating">
-                        <label>Instructions correctness:</label>
-                        <div class="rating-scale">
-                            <div style="width: 100%;">
-                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very incorrect</span>
-                                    <div style="flex: 1;"></div>
-                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very correct</span>
-                                </div>
-                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                    {% for i in range(1, 8) %}
-                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                        <input type="radio" id="instructions_correctness_{{ i }}" name="instructions_correctness" value="{{ i }}" required>
-                                        <label for="instructions_correctness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="subrating">
-                        <label>Nutrition information correctness:</label>
-                        <div class="rating-scale">
-                            <div style="width: 100%;">
-                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
-                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very incorrect</span>
-                                    <div style="flex: 1;"></div>
-                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very correct</span>
-                                </div>
-                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
-                                    {% for i in range(1, 8) %}
-                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
-                                        <input type="radio" id="nutrition_correctness_{{ i }}" name="nutrition_correctness" value="{{ i }}" required>
-                                        <label for="nutrition_correctness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                        <input type="radio" id="healthiness_{{ i }}" name="healthiness_rating" value="{{ i }}" required>
+                                        <label for="healthiness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
                                     </div>
                                     {% endfor %}
                                 </div>
@@ -308,13 +161,237 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Question 8: Comments -->
+
+                <!-- 3. Taste Expectation -->
+                <div class="rating-group correctness-details">
+                    <label>3. Taste Expectation</label>
+                    <div class="subrating">
+                        <label>How tasty do you think this recipe would be?</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not tasty at all</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very tasty</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="tastiness_{{ i }}" name="tastiness_rating" value="{{ i }}" required>
+                                        <label for="tastiness_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Feasibility -->
+                <div class="rating-group correctness-details">
+                    <label>4. Feasibility</label>
+                    <div class="subrating">
+                        <label>How feasible would it be for you to cook this recipe at home?</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not feasible</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very feasible</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="feasibility_{{ i }}" name="feasibility_rating" value="{{ i }}" required>
+                                        <label for="feasibility_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. Likelihood to Try -->
+                <div class="rating-group correctness-details">
+                    <label>5. Likelihood to Try</label>
+                    <div class="subrating">
+                        <label>How likely would you be to try cooking this recipe in the future?</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Very unlikely</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Very likely</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="would_make_{{ i }}" name="would_make" value="{{ i }}" required>
+                                        <label for="would_make_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 6. Accuracy & Plausibility (4 sub-questions) -->
+                <div class="rating-group correctness-details">
+                    <label>6. Accuracy & Plausibility</label>
+                    <div class="subrating">
+                        <label>The ingredients listed in this recipe seem appropriate for the dish.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="accuracy_ingredients_{{ i }}" name="accuracy_ingredients_rating" value="{{ i }}" required>
+                                        <label for="accuracy_ingredients_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subrating">
+                        <label>The cooking times appear reasonable.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="accuracy_times_{{ i }}" name="accuracy_times_rating" value="{{ i }}" required>
+                                        <label for="accuracy_times_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subrating">
+                        <label>The preparation steps follow a logical sequence.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="accuracy_steps_{{ i }}" name="accuracy_steps_rating" value="{{ i }}" required>
+                                        <label for="accuracy_steps_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subrating">
+                        <label>I believe this recipe would result in a good final dish.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="accuracy_final_{{ i }}" name="accuracy_final_rating" value="{{ i }}" required>
+                                        <label for="accuracy_final_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 7. Trust & Reliability (3 sub-questions) -->
+                <div class="rating-group correctness-details">
+                    <label>7. Trust & Reliability</label>
+                    <div class="subrating">
+                        <label>I would trust this recipe enough to try it myself.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="trust_try_{{ i }}" name="trust_try_rating" value="{{ i }}" required>
+                                        <label for="trust_try_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subrating">
+                        <label>The recipe seems professionally written.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="trust_professional_{{ i }}" name="trust_professional_rating" value="{{ i }}" required>
+                                        <label for="trust_professional_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="subrating">
+                        <label>The recipe looks like something I would find on a credible cooking website.</label>
+                        <div class="rating-scale">
+                            <div style="width: 100%;">
+                                <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                    <span style="flex: 0 0 auto; text-align: left; width: 120px;">Strongly disagree</span>
+                                    <div style="flex: 1;"></div>
+                                    <span style="flex: 0 0 auto; text-align: right; width: 120px;">Strongly agree</span>
+                                </div>
+                                <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                    {% for i in range(1, 6) %}
+                                    <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                        <input type="radio" id="trust_credible_{{ i }}" name="trust_credible_rating" value="{{ i }}" required>
+                                        <label for="trust_credible_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 8. Optional open question -->
                 <div class="form-group">
                     <label for="comments">8. Any additional comments about this recipe? (Optional, open question)</label>
                     <textarea id="comments" name="comments" rows="3" placeholder="Please share any thoughts about this recipe..."></textarea>
                 </div>
-                
                 <button type="submit" class="btn-primary">Continue</button>
             </form>
         </main>

@@ -16,6 +16,82 @@ logger = logging.getLogger(__name__)
 # Database path
 DB_PATH = "data/survey.db"
 
+# Remove old database if it exists
+if os.path.exists(DB_PATH):
+    os.remove(DB_PATH)
+
+# Create new database with updated schema
+conn = sqlite3.connect(DB_PATH)
+c = conn.cursor()
+
+c.execute('''
+CREATE TABLE IF NOT EXISTS participants (
+    participant_id TEXT PRIMARY KEY,
+    prolific_pid TEXT,
+    study_id TEXT,
+    session_id TEXT,
+    start_time TEXT,
+    completed_time TEXT,
+    completed BOOLEAN,
+    time_spent_minutes REAL,
+    current_step INTEGER DEFAULT 0,
+    step_completed_at TEXT,
+    last_activity_at TEXT,
+    age TEXT,
+    gender TEXT,
+    education TEXT
+)
+''')
+
+c.execute('''
+CREATE TABLE IF NOT EXISTS recipe_evaluations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    participant_id TEXT,
+    eval_number INTEGER,
+    recipe_id INTEGER,
+    recipe_name TEXT,
+    recipe_category TEXT,
+    completeness_info_rating INTEGER,
+    completeness_ingredients_rating INTEGER,
+    completeness_steps_rating INTEGER,
+    healthiness_rating INTEGER,
+    tastiness_rating INTEGER,
+    feasibility_rating INTEGER,
+    would_make INTEGER,
+    accuracy_ingredients_rating INTEGER,
+    accuracy_times_rating INTEGER,
+    accuracy_steps_rating INTEGER,
+    accuracy_final_rating INTEGER,
+    trust_try_rating INTEGER,
+    trust_professional_rating INTEGER,
+    trust_credible_rating INTEGER,
+    comments TEXT,
+    attention_check_recipe INTEGER,
+    FOREIGN KEY (participant_id) REFERENCES participants (participant_id)
+)
+''')
+
+c.execute('''
+CREATE TABLE IF NOT EXISTS post_survey (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    participant_id TEXT,
+    cooking_skills INTEGER,
+    new_recipe_frequency TEXT,
+    recipe_factors TEXT,
+    recipe_usage_frequency TEXT,
+    cooking_frequency TEXT,
+    trust_human_recipes INTEGER,
+    trust_ai_recipes INTEGER,
+    ai_recipe_usage TEXT,
+    comments TEXT,
+    attention_check_post TEXT,
+    FOREIGN KEY (participant_id) REFERENCES participants (participant_id)
+)
+''')
+
+conn.commit()
+conn.close()
+
 def init_db():
     """
     Initialize the database and create tables if they don't exist.
@@ -43,7 +119,7 @@ def init_db():
         gender TEXT,
         education TEXT
     );
-    
+
     CREATE TABLE IF NOT EXISTS recipe_evaluations (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         participant_id TEXT,
@@ -51,34 +127,38 @@ def init_db():
         recipe_id INTEGER,
         recipe_name TEXT,
         recipe_category TEXT,
-        completeness_rating INTEGER,        -- Does the recipe include all needed information to cook it?
-        healthiness_rating INTEGER,         -- How would you rate healthiness of this recipe?
-        tastiness_rating INTEGER,           -- How tasty does this recipe seem?
-        feasibility_rating INTEGER,         -- How feasible would it be for you to cook this recipe at home?
-        would_make INTEGER,                 -- How likely would you be to try cooking this recipe in the future?
-        ingredients_complexity INTEGER,     -- Rate the complexity of ingredients list
-        instructions_complexity INTEGER,    -- Rate the complexity of instructions
-        ingredients_correctness INTEGER,    -- How correct are the ingredients?
-        instructions_correctness INTEGER,   -- How correct are the instructions?
-        nutrition_correctness INTEGER,      -- How correct is the nutrition information?
-        comments TEXT,                      -- Any additional comments about this recipe?
-        attention_check_recipe INTEGER,     -- Attention check: should be 3
+        completeness_info_rating INTEGER,
+        completeness_ingredients_rating INTEGER,
+        completeness_steps_rating INTEGER,
+        healthiness_rating INTEGER,
+        tastiness_rating INTEGER,
+        feasibility_rating INTEGER,
+        would_make INTEGER,
+        accuracy_ingredients_rating INTEGER,
+        accuracy_times_rating INTEGER,
+        accuracy_steps_rating INTEGER,
+        accuracy_final_rating INTEGER,
+        trust_try_rating INTEGER,
+        trust_professional_rating INTEGER,
+        trust_credible_rating INTEGER,
+        comments TEXT,
+        attention_check_recipe INTEGER,
         FOREIGN KEY (participant_id) REFERENCES participants (participant_id)
     );
-    
-    CREATE TABLE IF NOT EXISTS post_surveys (
+
+    CREATE TABLE IF NOT EXISTS post_survey (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         participant_id TEXT,
-        cooking_skills INTEGER,             -- How would you rate your cooking skills?
-        new_recipe_frequency TEXT,          -- How often do you cook new recipes?
-        recipe_factors TEXT,                -- What's most important to you when deciding whether to try a recipe? (JSON array)
-        recipe_usage_frequency TEXT,        -- How often do you use recipes to cook meals?
-        cooking_frequency TEXT,             -- How often do you cook meals at home?
-        trust_human_recipes INTEGER,        -- How much would you trust recipes created by human authors?
-        trust_ai_recipes INTEGER,           -- How much would you trust recipes generated by AI tools (e.g., ChatGPT)?
-        ai_recipe_usage TEXT,               -- How often do you use AI to generate recipes?
-        comments TEXT,                      -- Any comments about what makes a recipe feasible for you to cook?
-        attention_check_post TEXT,          -- Attention check: should be "gemini"
+        cooking_skills INTEGER,
+        new_recipe_frequency TEXT,
+        recipe_factors TEXT,
+        recipe_usage_frequency TEXT,
+        cooking_frequency TEXT,
+        trust_human_recipes INTEGER,
+        trust_ai_recipes INTEGER,
+        ai_recipe_usage TEXT,
+        comments TEXT,
+        attention_check_post TEXT,
         FOREIGN KEY (participant_id) REFERENCES participants (participant_id)
     );
     """)
@@ -183,6 +263,16 @@ def save_participant(participant_data: Dict[str, Any]):
             ))
             logger.info(f"Added participant {participant_id} to database")
         
+        # Save demographics (now part of participants)
+        cursor.execute("""
+        UPDATE participants SET age = ?, gender = ?, education = ? WHERE participant_id = ?
+        """, (
+            demographics.get("age"),
+            demographics.get("gender"),
+            demographics.get("education"),
+            participant_id
+        ))
+        
         # Save recipe evaluations
         for i in range(1, 6):
             eval_key = f"recipe_eval_{i}"
@@ -206,16 +296,20 @@ def save_participant(participant_data: Dict[str, Any]):
                         recipe_id = ?,
                         recipe_name = ?,
                         recipe_category = ?,
-                        completeness_rating = ?,
+                        completeness_info_rating = ?,
+                        completeness_ingredients_rating = ?,
+                        completeness_steps_rating = ?,
                         healthiness_rating = ?,
                         tastiness_rating = ?,
                         feasibility_rating = ?,
                         would_make = ?,
-                        ingredients_complexity = ?,
-                        instructions_complexity = ?,
-                        ingredients_correctness = ?,
-                        instructions_correctness = ?,
-                        nutrition_correctness = ?,
+                        accuracy_ingredients_rating = ?,
+                        accuracy_times_rating = ?,
+                        accuracy_steps_rating = ?,
+                        accuracy_final_rating = ?,
+                        trust_try_rating = ?,
+                        trust_professional_rating = ?,
+                        trust_credible_rating = ?,
                         comments = ?,
                         attention_check_recipe = ?
                     WHERE participant_id = ? AND eval_number = ?
@@ -223,16 +317,20 @@ def save_participant(participant_data: Dict[str, Any]):
                         eval_data.get("recipe_id"),
                         eval_data.get("recipe_name"),
                         eval_data.get("recipe_category"),
-                        eval_data.get("completeness_rating"),
+                        eval_data.get("completeness_info_rating"),
+                        eval_data.get("completeness_ingredients_rating"),
+                        eval_data.get("completeness_steps_rating"),
                         eval_data.get("healthiness_rating"),
                         eval_data.get("tastiness_rating"),
                         eval_data.get("feasibility_rating"),
                         eval_data.get("would_make"),
-                        eval_data.get("ingredients_complexity"),
-                        eval_data.get("instructions_complexity"),
-                        eval_data.get("ingredients_correctness"),
-                        eval_data.get("instructions_correctness"),
-                        eval_data.get("nutrition_correctness"),
+                        eval_data.get("accuracy_ingredients_rating"),
+                        eval_data.get("accuracy_times_rating"),
+                        eval_data.get("accuracy_steps_rating"),
+                        eval_data.get("accuracy_final_rating"),
+                        eval_data.get("trust_try_rating"),
+                        eval_data.get("trust_professional_rating"),
+                        eval_data.get("trust_credible_rating"),
                         eval_data.get("comments", ""),
                         eval_data.get("attention_check_recipe"),
                         participant_id,
@@ -242,26 +340,32 @@ def save_participant(participant_data: Dict[str, Any]):
                     cursor.execute("""
                     INSERT INTO recipe_evaluations
                     (participant_id, eval_number, recipe_id, recipe_name, recipe_category,
-                     completeness_rating, healthiness_rating, tastiness_rating, feasibility_rating, would_make,
-                     ingredients_complexity, instructions_complexity, ingredients_correctness, 
-                     instructions_correctness, nutrition_correctness, comments, attention_check_recipe)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                     completeness_info_rating, completeness_ingredients_rating, completeness_steps_rating,
+                     healthiness_rating, tastiness_rating, feasibility_rating, would_make,
+                     accuracy_ingredients_rating, accuracy_times_rating, accuracy_steps_rating, accuracy_final_rating,
+                     trust_try_rating, trust_professional_rating, trust_credible_rating,
+                     comments, attention_check_recipe)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     """, (
                         participant_id,
                         i,
                         eval_data.get("recipe_id"),
                         eval_data.get("recipe_name"),
                         eval_data.get("recipe_category"),
-                        eval_data.get("completeness_rating"),
+                        eval_data.get("completeness_info_rating"),
+                        eval_data.get("completeness_ingredients_rating"),
+                        eval_data.get("completeness_steps_rating"),
                         eval_data.get("healthiness_rating"),
                         eval_data.get("tastiness_rating"),
                         eval_data.get("feasibility_rating"),
                         eval_data.get("would_make"),
-                        eval_data.get("ingredients_complexity"),
-                        eval_data.get("instructions_complexity"),
-                        eval_data.get("ingredients_correctness"),
-                        eval_data.get("instructions_correctness"),
-                        eval_data.get("nutrition_correctness"),
+                        eval_data.get("accuracy_ingredients_rating"),
+                        eval_data.get("accuracy_times_rating"),
+                        eval_data.get("accuracy_steps_rating"),
+                        eval_data.get("accuracy_final_rating"),
+                        eval_data.get("trust_try_rating"),
+                        eval_data.get("trust_professional_rating"),
+                        eval_data.get("trust_credible_rating"),
                         eval_data.get("comments", ""),
                         eval_data.get("attention_check_recipe")
                     ))
@@ -272,7 +376,7 @@ def save_participant(participant_data: Dict[str, Any]):
             
             # Check if post survey already exists
             cursor.execute("""
-            SELECT id FROM post_surveys WHERE participant_id = ?
+            SELECT id FROM post_survey WHERE participant_id = ?
             """, (participant_id,))
             
             existing = cursor.fetchone()
@@ -286,7 +390,7 @@ def save_participant(participant_data: Dict[str, Any]):
             
             if existing:
                 cursor.execute("""
-                UPDATE post_surveys SET
+                UPDATE post_survey SET
                     cooking_skills = ?,
                     new_recipe_frequency = ?,
                     recipe_factors = ?,
@@ -313,7 +417,7 @@ def save_participant(participant_data: Dict[str, Any]):
                 ))
             else:
                 cursor.execute("""
-                INSERT INTO post_surveys
+                INSERT INTO post_survey
                 (participant_id, cooking_skills, new_recipe_frequency, recipe_factors,
                  recipe_usage_frequency, cooking_frequency, trust_human_recipes, trust_ai_recipes, ai_recipe_usage, comments, attention_check_post)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -421,7 +525,7 @@ def get_participant_data(participant_id: str) -> Optional[Dict]:
         
         # Get post survey
         cursor.execute("""
-        SELECT * FROM post_surveys 
+        SELECT * FROM post_survey 
         WHERE participant_id = ?
         """, (participant_id,))
         
@@ -479,7 +583,7 @@ def export_to_csv():
             logger.info(f"Exported {len(evaluations)} recipe evaluations to CSV")
         
         # Export post surveys
-        cursor.execute("SELECT * FROM post_surveys")
+        cursor.execute("SELECT * FROM post_survey")
         surveys = [dict(row) for row in cursor.fetchall()]
         
         if surveys:
@@ -560,7 +664,7 @@ def get_quality_metrics() -> Dict[str, any]:
         recipe_failures = cursor.fetchone()[0]
         
         # Attention check failures (post survey)
-        cursor.execute("SELECT COUNT(*) FROM post_surveys WHERE attention_check_post IS NOT NULL AND attention_check_post != 'gemini'")
+        cursor.execute("SELECT COUNT(*) FROM post_survey WHERE attention_check_post IS NOT NULL AND attention_check_post != 'gemini'")
         post_failures = cursor.fetchone()[0]
         
         metrics["attention_check_failures"] = recipe_failures + post_failures
@@ -601,7 +705,7 @@ def get_participants_with_quality_flags() -> List[Dict]:
                 WHERE re.participant_id = p.participant_id 
                 AND re.attention_check_recipe IS NOT NULL 
                 AND re.attention_check_recipe != 3) as recipe_attention_failures,
-               (SELECT COUNT(*) FROM post_surveys ps 
+               (SELECT COUNT(*) FROM post_survey ps 
                 WHERE ps.participant_id = p.participant_id 
                 AND ps.attention_check_post IS NOT NULL 
                 AND ps.attention_check_post != 'gemini') as post_attention_failures,

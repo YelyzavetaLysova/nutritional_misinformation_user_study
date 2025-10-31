@@ -45,19 +45,20 @@
                     <div class="rating-scale">
                         <div style="width: 100%;">
                             <select id="new_recipe_frequency" name="new_recipe_frequency" required>
-                                <option value="" selected disabled>Select an option</option>
-                                <option value="very_often">Very often - I try new recipes multiple times a week</option>
-                                <option value="often">Often - I try new recipes weekly</option>
-                                <option value="sometimes">Sometimes - I try new recipes a couple times a month</option>
-                                <option value="rarely">Rarely - I try new recipes a few times a year</option>
-                                <option value="never">Never - I stick to recipes I already know</option>
+                                 <option value="" selected disabled>Select an option</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
                 <div class="rating-group correctness-details">
-                    <label>What's most important to you when deciding whether to try a recipe? (Select all that apply)</label>
+                    <label>Which factors are important to you when deciding whether to try a recipe? (Select all that apply)</label>
                     <div class="rating-scale">
                         <div style="width: 100%;">
                             <div class="checkbox-group">
@@ -92,11 +93,12 @@
                         <div style="width: 100%;">
                             <select id="recipe_usage_frequency" name="recipe_usage_frequency" required>
                                 <option value="" selected disabled>Select an option</option>
-                                <option value="always">Always - I follow recipes for every meal</option>
-                                <option value="mostly">Mostly - I use recipes for most meals</option>
-                                <option value="sometimes">Sometimes - I use recipes occasionally</option>
-                                <option value="rarely">Rarely - I prefer to cook without recipes</option>
-                                <option value="never">Never - I don't use recipes</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
                             </select>
                         </div>
                     </div>
@@ -141,11 +143,11 @@
                 </div>
                 
                 <div class="rating-group correctness-details">
-                    <label>Which AI provider would you choose for recipe generation?</label>
+                    <label>Which AI provider would you choose for recipe generation? (Select Gemini. This is an attention check)</label>
                     <div class="rating-scale">
                         <div style="width: 100%;">
                             <select id="attention_check_post" name="attention_check_post" required>
-                                <option value="" selected disabled>Select Gemini. This is an attention check</option>
+                                <option value="" selected disabled>Select an option</option>
                                 <option value="chatgpt">ChatGPT</option>
                                 <option value="claude">Claude</option>
                                 <option value="gemini">Gemini</option>
@@ -182,19 +184,19 @@
                         <div style="width: 100%;">
                             <select id="ai_recipe_usage" name="ai_recipe_usage" required>
                                 <option value="" selected disabled>Select an option</option>
-                                <option value="very_often">Very often - Multiple times a week</option>
-                                <option value="often">Often - About once a week</option>
-                                <option value="sometimes">Sometimes - A few times a month</option>
-                                <option value="rarely">Rarely - A few times a year</option>
-                                <option value="never">Never - I don't use AI for recipes</option>
-                                <option value="not_aware">I wasn't aware AI could generate recipes</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
                             </select>
                         </div>
                     </div>
                 </div>
                 
                 <div class="rating-group correctness-details">
-                    <label>Any comments about what makes a recipe feasible for you to cook? (Optional)</label>
+                    <label>Any other comment you want to share with us? (Optional)</label>
                     <div class="rating-scale">
                         <div style="width: 100%;">
                             <textarea id="comments" name="comments" rows="3"></textarea>
@@ -202,7 +204,9 @@
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-primary">Continue</button>
+                <div style="display: flex; justify-content: center; align-items: center; margin-top: 32px;">
+                    <button type="submit" class="btn-primary">Continue</button>
+                </div>
             </form>
         </main>
         <footer>

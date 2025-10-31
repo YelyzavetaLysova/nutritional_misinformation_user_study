@@ -592,20 +592,6 @@ button {
     position: relative;
 }
 
-.recipe-card h2::after {
-    content: "Recipe";
-    position: absolute;
-    top: -10px;
-    right: 0;
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: normal;
-    opacity: 0.8;
-}
-
 .recipe-description {
     font-style: italic;
     margin-bottom: 1.2rem;
@@ -843,5 +829,140 @@ button {
     
     .blue-consent {
         padding: 0.8rem;
+    }
+}
+
+/* Responsive design for desktop/tablet */
+@media (min-width: 700px) {
+    .mobile-container {
+        max-width: 700px;
+        min-height: 80vh;
+        margin: 2rem auto;
+        border-radius: 16px;
+        box-shadow: 0 0 32px var(--shadow-color);
+        padding: 2rem 2.5rem;
+    }
+    main {
+        padding: 2.5rem 2.5rem;
+        font-size: 1.1rem;
+    }
+    header h1 {
+        font-size: 2.2rem;
+    }
+    h2 {
+        font-size: 1.7rem;
+    }
+    h3 {
+        font-size: 1.3rem;
+    }
+    .survey-form, .action-form {
+        padding: 2rem 2.5rem;
+    }
+    .form-group {
+        margin-bottom: 2.2rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 1.1rem;
+        padding: 1.2rem;
+    }
+    button, .btn-primary, .btn-secondary {
+        font-size: 1.1rem;
+        padding: 1rem 2rem;
+    }
+    ul, ol {
+        font-size: 1.1rem;
+    }
+}
+
+/* Desktop layout: wide, centered, with more whitespace and larger elements */
+@media (min-width: 1000px) {
+    body {
+        background-color: #f5f7fa;
+    }
+    .container, .mobile-container {
+        max-width: 900px;
+        min-height: 80vh;
+        margin: 3rem auto;
+        border-radius: 24px;
+        box-shadow: 0 0 48px var(--shadow-color);
+        padding: 3rem 3.5rem;
+        background: #fff;
+    }
+    main {
+        padding: 3rem 3.5rem;
+        font-size: 1.2rem;
+    }
+    header {
+        padding: 2rem 0;
+        font-size: 2.5rem;
+    }
+    header h1 {
+        font-size: 2.5rem;
+    }
+    h2 {
+        font-size: 2rem;
+    }
+    h3 {
+        font-size: 1.5rem;
+    }
+    .survey-form, .action-form {
+        padding: 2.5rem 3rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .form-group {
+        margin-bottom: 2.5rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    select,
+    textarea {
+        font-size: 1.2rem;
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+    button, .btn-primary, .btn-secondary {
+        font-size: 1.2rem;
+        padding: 1.2rem 2.5rem;
+        border-radius: 12px;
+    }
+    ul, ol {
+        font-size: 1.2rem;
+    }
+    .nutrition-info {
+        font-size: 1.1rem;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+    }
+    .recipe-card {
+        margin: 2rem 0;
+        padding: 2rem 2.5rem;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+        background: #f9f9f9;
+    }
+    .recipe-section {
+        margin-bottom: 2rem;
+    }
+    /* Admin dashboard table and cards */
+    .metrics-grid {
+        gap: 32px !important;
+    }
+    .metric-card {
+        padding: 32px !important;
+        font-size: 1.2rem;
+        border-radius: 16px !important;
+    }
+    .table th, .table td {
+        padding: 18px !important;
+        font-size: 1.1rem;
+    }
+    .section {
+        margin-bottom: 48px !important;
     }
 }

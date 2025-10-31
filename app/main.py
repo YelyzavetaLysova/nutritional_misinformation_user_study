@@ -5,6 +5,7 @@ import logging
 import random
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Set
+import re
 
 import pandas as pd
 from fastapi import FastAPI, Form, Request, Depends, HTTPException
@@ -397,81 +398,71 @@ def create_new_participant() -> Participant:
             normalized_categories[normalized_cat] = []
         normalized_categories[normalized_cat].append(category)
     
-    # Get the set of normalized category names
     unique_categories = list(normalized_categories.keys())
     
     # Ensure we have at least 5 unique categories
     if len(unique_categories) < NUM_RECIPES_PER_PARTICIPANT:
         logger.warning(f"Only {len(unique_categories)} unique categories available. Some recipes may be from similar categories.")
-        
+        # Fallback: use all available categories
+    
     # Shuffle categories for random selection
     random.shuffle(unique_categories)
     
     # Select 5 categories (or as many as available if less than 5)
     selected_categories = unique_categories[:min(NUM_RECIPES_PER_PARTICIPANT, len(unique_categories))]
-    
     logger.info(f"Selected categories: {selected_categories}")
     
     # Select one recipe from each of the selected categories
     for i, normalized_cat in enumerate(selected_categories):
-        # Get all original category names that map to this normalized category
         original_categories = normalized_categories[normalized_cat]
-        
-        # Create a mask for recipes in any of the matching categories
         category_mask = recipes_df["Category"].apply(lambda x: x.strip().lower() == normalized_cat)
         category_recipes = recipes_df[category_mask]
-        
         if not category_recipes.empty:
             recipe_index = random.choice(category_recipes.index.tolist())
             selected_recipes.append(recipe_index)
             logger.info(f"Selected recipe {recipe_index} from category '{normalized_cat}'")
     
-    # If we still don't have enough recipes (unlikely but possible if some categories have no recipes)
-    remaining_needed = NUM_RECIPES_PER_PARTICIPANT - len(selected_recipes)
-    if remaining_needed > 0:
-        logger.warning(f"Not enough categories with recipes. Filling with {remaining_needed} random recipes.")
-        attempts = 0
-        
-        # Try to find recipes from unused categories first
-        unused_categories = [cat for cat in unique_categories if cat not in selected_categories]
-        
-        for normalized_cat in unused_categories:
-            if len(selected_recipes) >= NUM_RECIPES_PER_PARTICIPANT:
-                break
-                
-            category_mask = recipes_df["Category"].apply(lambda x: x.strip().lower() == normalized_cat)
-            category_recipes = recipes_df[category_mask]
-            
-            if not category_recipes.empty:
-                recipe_index = random.choice(category_recipes.index.tolist())
-                if recipe_index not in selected_recipes:
-                    selected_recipes.append(recipe_index)
-                    logger.info(f"Added recipe {recipe_index} from unused category '{normalized_cat}'")
-        
-        # If still not enough, add random recipes
-        while len(selected_recipes) < NUM_RECIPES_PER_PARTICIPANT and attempts < 100:
-            attempts += 1
-            random_index = random.choice(recipes_df.index.tolist())
-            if random_index not in selected_recipes:
-                selected_recipes.append(random_index)
-                logger.info(f"Added random recipe {random_index}")
+    # If we still don't have enough recipes, fill with random recipes
+    attempts = 0
+    while len(selected_recipes) < NUM_RECIPES_PER_PARTICIPANT and attempts < 100:
+        attempts += 1
+        random_index = random.choice(recipes_df.index.tolist())
+        if random_index not in selected_recipes:
+            selected_recipes.append(random_index)
+            logger.info(f"Added random recipe {random_index}")
+    
+    # Final check and logging
+    if len(selected_recipes) != NUM_RECIPES_PER_PARTICIPANT:
+        logger.error(f"Failed to select {NUM_RECIPES_PER_PARTICIPANT} recipes, got {len(selected_recipes)}: {selected_recipes}")
+    else:
+        logger.info(f"Final selected_recipes for participant {participant_id}: {selected_recipes}")
     
     # Shuffle the selected recipes to randomize their order in the survey
     random.shuffle(selected_recipes)
     
-    # Create and store the participant
     participant = Participant(
         id=participant_id,
         selected_recipes=selected_recipes,
         start_time=datetime.now().isoformat(),
         last_activity=datetime.now().isoformat()
     )
-    
     participants[participant_id] = participant
     logger.info(f"Created new participant {participant_id} with recipes {selected_recipes}")
-    
     return participant
 
+
+def parse_ingredients(ingredients_str):
+    # If there is no period, split by comma. Otherwise, split by period (not decimal)
+    if '.' not in ingredients_str:
+        items = [i.strip() for i in ingredients_str.split(',') if i.strip()]
+    else:
+        items = [i.strip() for i in re.split(r'\.(?!\d)', ingredients_str) if i.strip()]
+    return items
+
+def parse_instructions(instructions_str):
+    # Split by step numbers (e.g., '1. ', '2. ') or newline
+    steps = re.split(r'\s*\d+\.\s*', instructions_str)
+    return [s.strip() for s in steps if s.strip()]
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -603,13 +594,23 @@ async def recipe_evaluation(request: Request, step_id: int, participant: Partici
     if step_id < 1 or step_id > NUM_RECIPES_PER_PARTICIPANT:
         raise HTTPException(status_code=404, detail="Invalid step")
     
+    # Robust check for selected_recipes length
+    if not participant.selected_recipes or len(participant.selected_recipes) < NUM_RECIPES_PER_PARTICIPANT:
+        logger.error(f"Participant {participant.id} has insufficient selected_recipes: {participant.selected_recipes}")
+        # Optionally, restart survey or show error page
+        return RedirectResponse(url="/", status_code=303)
+    
     # Track step start time
     participant.step_times[f"recipe_eval_{step_id}"] = datetime.now().isoformat()
     
     # Get recipe data
     recipe_index = participant.selected_recipes[step_id - 1]
     recipe = recipes_df.iloc[recipe_index].to_dict()
-    
+    # Add parsed lists for template rendering
+    recipe['Ingredients_list'] = parse_ingredients(recipe.get('Ingredients', ''))
+    recipe['Instructions_list'] = parse_instructions(recipe.get('Instructions', ''))
+    logger.info(f"Parsed ingredients for recipe {recipe.get('Recipe Name', '')}: {recipe['Ingredients_list']}")
+    logger.info(f"Parsed instructions for recipe {recipe.get('Recipe Name', '')}: {recipe['Instructions_list']}")
     return templates.TemplateResponse(
         "recipe_evaluation.html", 
         {
@@ -626,88 +627,74 @@ async def submit_recipe_evaluation(
     request: Request,
     step_id: int,
     recipe_name: str = Form(...),
-    completeness_rating: int = Form(...),
+    completeness_info_rating: int = Form(...),
+    completeness_ingredients_rating: int = Form(...),
+    completeness_steps_rating: int = Form(...),
     healthiness_rating: int = Form(...),
     tastiness_rating: int = Form(...),
     feasibility_rating: int = Form(...),
     would_make: int = Form(...),
-    ingredients_complexity: int = Form(...),
-    instructions_complexity: int = Form(...),
-    ingredients_correctness: int = Form(...),
-    instructions_correctness: int = Form(...),
-    nutrition_correctness: int = Form(...),
+    accuracy_ingredients_rating: int = Form(...),
+    accuracy_times_rating: int = Form(...),
+    accuracy_steps_rating: int = Form(...),
+    accuracy_final_rating: int = Form(...),
+    trust_try_rating: int = Form(...),
+    trust_professional_rating: int = Form(...),
+    trust_credible_rating: int = Form(...),
     comments: str = Form(None),
     attention_check_recipe: int = Form(None),
     participant: Participant = Depends(get_participant_from_session)
 ):
     """Process recipe evaluation submission."""
-    # Log form data for debugging
     form_data = await request.form()
     logger.info(f"Recipe evaluation form submission data for step {step_id}: {dict(form_data)}")
-    
     if not participant:
         return RedirectResponse(url="/", status_code=303)
-    
-    # Step validation: Check if participant can submit this step
     if not validate_step_access(participant, step_id):
         redirect_url = get_correct_step_redirect(participant)
         logger.warning(f"Unauthorized submission attempt to recipe_eval_{step_id}. Redirecting to {redirect_url}")
         return RedirectResponse(url=redirect_url, status_code=303)
-    
     if step_id < 1 or step_id > NUM_RECIPES_PER_PARTICIPANT:
         raise HTTPException(status_code=404, detail="Invalid step")
-    
-    # Validate response time
     step_start_time = participant.step_times.get(f"recipe_eval_{step_id}")
     if step_start_time:
         time_validation = validate_response_time(step_start_time, f"recipe_eval_{step_id}")
         if time_validation["warning"]:
             logger.info(f"Recipe eval {step_id} timing warning for {participant.id}: {time_validation['warning']}")
-        
-        # Store response time in evaluation data
         eval_data = {
             "response_time_seconds": time_validation.get("time_spent_seconds")
         }
     else:
         eval_data = {}
-    
-    # Store evaluation data
     recipe_index = participant.selected_recipes[step_id - 1]
     recipe = recipes_df.iloc[recipe_index]
-    
     eval_data.update({
         "recipe_id": recipe_index,
         "recipe_name": recipe_name,
         "recipe_category": recipe["Category"],
-        "completeness_rating": completeness_rating,
+        "completeness_info_rating": completeness_info_rating,
+        "completeness_ingredients_rating": completeness_ingredients_rating,
+        "completeness_steps_rating": completeness_steps_rating,
         "healthiness_rating": healthiness_rating,
         "tastiness_rating": tastiness_rating,
         "feasibility_rating": feasibility_rating,
         "would_make": would_make,
-        "ingredients_complexity": ingredients_complexity,
-        "instructions_complexity": instructions_complexity,
-        "ingredients_correctness": ingredients_correctness,
-        "instructions_correctness": instructions_correctness,
-        "nutrition_correctness": nutrition_correctness,
+        "accuracy_ingredients_rating": accuracy_ingredients_rating,
+        "accuracy_times_rating": accuracy_times_rating,
+        "accuracy_steps_rating": accuracy_steps_rating,
+        "accuracy_final_rating": accuracy_final_rating,
+        "trust_try_rating": trust_try_rating,
+        "trust_professional_rating": trust_professional_rating,
+        "trust_credible_rating": trust_credible_rating,
         "comments": comments or ""
     })
-    
-    # Only add attention check for step 3
     if step_id == 3:
         eval_data["attention_check_recipe"] = attention_check_recipe
-    
     participant.responses[f"recipe_eval_{step_id}"] = eval_data
-    
-    # Update participant progress
     if step_id >= participant.current_step:
         participant.current_step = step_id + 1
-    
-    # Save responses to CSV
     save_participant_responses(participant)
-    
     logger.info(f"Participant {participant.id} completed recipe evaluation {step_id}")
-    
-    # Determine next step
     if step_id < NUM_RECIPES_PER_PARTICIPANT:
         return RedirectResponse(url=f"/recipe_eval_{step_id + 1}", status_code=303)
     else:
