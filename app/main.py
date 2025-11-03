@@ -196,25 +196,23 @@ def validate_response_time(start_time: str, step_type: str) -> Dict[str, any]:
 
 def validate_attention_checks(participant: Participant) -> Dict[str, any]:
     """
-    Validate attention checks for a participant.
-    Returns validation results.
+    Validate attention check answers from the participant's responses.
+    Returns a dictionary with validation results.
     """
     results = {
         "recipe_attention_check_passed": None,
         "post_survey_attention_check_passed": None,
-        "overall_passed": True
+        "all_checks_passed": False
     }
     
-    # Check recipe evaluation attention check (step 3)
-    recipe_eval_3 = participant.responses.get("recipe_eval_3", {})
-    if "attention_check_recipe" in recipe_eval_3:
-        expected_answer = 3  # Should select "3" on the scale
-        actual_answer = recipe_eval_3.get("attention_check_recipe")
+    # Recipe evaluation attention check (should be 4)
+    recipe_eval_1 = participant.responses.get("recipe_eval_1", {})
+    if "attention_check_recipe" in recipe_eval_1:
+        expected_answer = 4  # The correct answer is 4
+        actual_answer = recipe_eval_1.get("attention_check_recipe")
         passed = actual_answer == expected_answer
         results["recipe_attention_check_passed"] = passed
-        if not passed:
-            logger.warning(f"Recipe attention check failed for {participant.id}: expected {expected_answer}, got {actual_answer}")
-            results["overall_passed"] = False
+        logger.info(f"Recipe attention check for {participant.id}: expected {expected_answer}, got {actual_answer}")
     
     # Check post-survey attention check
     post_survey = participant.responses.get("post_survey", {})
@@ -225,7 +223,7 @@ def validate_attention_checks(participant: Participant) -> Dict[str, any]:
         results["post_survey_attention_check_passed"] = passed
         if not passed:
             logger.warning(f"Post-survey attention check failed for {participant.id}: expected '{expected_answer}', got '{actual_answer}'")
-            results["overall_passed"] = False
+            results["all_checks_passed"] = False
     
     return results
 
@@ -688,7 +686,7 @@ async def submit_recipe_evaluation(
         "trust_credible_rating": trust_credible_rating,
         "comments": comments or ""
     })
-    if step_id == 3:
+    if step_id == 1:
         eval_data["attention_check_recipe"] = attention_check_recipe
     participant.responses[f"recipe_eval_{step_id}"] = eval_data
     if step_id >= participant.current_step:
