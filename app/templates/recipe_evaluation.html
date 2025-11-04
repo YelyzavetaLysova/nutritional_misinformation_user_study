@@ -74,7 +74,6 @@
                 <input type="hidden" name="recipe_name" value="{{ recipe['Recipe Name'] }}">
                 <!-- 1. Completeness (3 sub-questions, styled block) -->
                 <div class="rating-group correctness-details">
-                    <label>1. Completeness</label>
                     <div class="subrating">
                         <label>The recipe includes all the information needed to cook it.</label>
                         <div class="rating-scale">
@@ -135,11 +134,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 2. Healthiness -->
-                <div class="rating-group correctness-details">
-                    <label>2. Healthiness</label>
                     <div class="subrating">
                         <label>How would you rate the healthiness of this recipe?</label>
                         <div class="rating-scale">
@@ -160,11 +155,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 3. Taste Expectation -->
-                <div class="rating-group correctness-details">
-                    <label>3. Taste Expectation</label>
+
                     <div class="subrating">
                         <label>How tasty do you think this recipe would be?</label>
                         <div class="rating-scale">
@@ -185,11 +177,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 4. Feasibility -->
-                <div class="rating-group correctness-details">
-                    <label>4. Feasibility</label>
                     <div class="subrating">
                         <label>How feasible would it be for you to cook this recipe at home?</label>
                         <div class="rating-scale">
@@ -210,11 +198,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 5. Likelihood to Try -->
-                <div class="rating-group correctness-details">
-                    <label>5. Likelihood to Try</label>
                     <div class="subrating">
                         <label>How likely would you be to try cooking this recipe in the future?</label>
                         <div class="rating-scale">
@@ -235,11 +219,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <!-- 6. Accuracy & Plausibility (4 sub-questions) -->
-                <div class="rating-group correctness-details">
-                    <label>6. Accuracy & Plausibility</label>
                     <div class="subrating">
                         <label>The ingredients listed in this recipe seem appropriate for the dish.</label>
                         <div class="rating-scale">
@@ -320,11 +299,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- 7. Trust & Reliability (3 sub-questions) -->
-                <div class="rating-group correctness-details">
-                    <label>7. Trust & Reliability</label>
                     <div class="subrating">
                         <label>I would trust this recipe enough to try it myself.</label>
                         <div class="rating-scale">
@@ -345,9 +320,9 @@
                             </div>
                         </div>
                     </div>
-                    {% if step == 1 %}
+                    {% if step == 3 %}
                     <div class="subrating attention-check">
-                        <label><strong>Attention Check:</strong> Please choose <strong>4</strong> for this question.</label>
+                        <label style="font-size: 1.1em;"><strong>Attention Check:</strong> Please choose <strong>4</strong> for this question.</label>
                         <div class="rating-scale">
                             <div style="width: 100%;">
                                 <div style="display: flex; width: 100%; margin-bottom: 5px;">
@@ -406,12 +381,12 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
+
 
                 <!-- 8. Optional open question -->
                 <div class="form-group">
-                    <label for="comments">8. Any additional comments about this recipe? (Optional, open question)</label>
+                    <label for="comments">Any additional comments about this recipe? (Optional, open question)</label>
                     <textarea id="comments" name="comments" rows="3" placeholder="Please share any thoughts about this recipe..."></textarea>
                 </div>
                 <button type="submit" class="btn-primary">Continue</button>
