@@ -206,10 +206,10 @@ def validate_attention_checks(participant: Participant) -> Dict[str, any]:
     }
     
     # Recipe evaluation attention check (should be 4)
-    recipe_eval_1 = participant.responses.get("recipe_eval_1", {})
-    if "attention_check_recipe" in recipe_eval_1:
+    recipe_eval_3 = participant.responses.get("recipe_eval_3", {})
+    if "attention_check_recipe" in recipe_eval_3:
         expected_answer = 4  # The correct answer is 4
-        actual_answer = recipe_eval_1.get("attention_check_recipe")
+        actual_answer = recipe_eval_3.get("attention_check_recipe")
         passed = actual_answer == expected_answer
         results["recipe_attention_check_passed"] = passed
         logger.info(f"Recipe attention check for {participant.id}: expected {expected_answer}, got {actual_answer}")
@@ -686,7 +686,7 @@ async def submit_recipe_evaluation(
         "trust_credible_rating": trust_credible_rating,
         "comments": comments or ""
     })
-    if step_id == 1:
+    if step_id == 3:
         eval_data["attention_check_recipe"] = attention_check_recipe
     participant.responses[f"recipe_eval_{step_id}"] = eval_data
     if step_id >= participant.current_step:
