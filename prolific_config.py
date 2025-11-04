@@ -7,7 +7,7 @@ import os
 # You'll get this from Prolific when you create your study
 PROLIFIC_COMPLETION_URL = os.getenv(
     "PROLIFIC_COMPLETION_URL", 
-    "https://app.prolific.co/submissions/complete?cc=C12345AB"  # Replace with your actual completion code from Prolific
+    "https://app.prolific.com/submissions/complete?cc=CFSSXT5D"  # Your actual completion code from Prolific
 )
 
 # Study settings
