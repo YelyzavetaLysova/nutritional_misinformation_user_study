@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post-Survey - Recipe Feasibility Study</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body>
+    <div class="mobile-container">
+        <header>
+            <h1>Post-Survey Questions</h1>
+        </header>
+        <main>
+            <div class="progress-bar">
+                <div class="progress" style="width: 86%"></div>
+            </div>
+            <p class="progress-text">Step 6 of 7</p>
+            
+
+            <form action="/post_survey" method="post" class="survey-form">
+                <div class="rating-group correctness-details">
+                    <label>How would you rate your cooking skills?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Beginner</span>
+                                <div style="flex: 1;"></div>
+                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Expert</span>
+                            </div>
+                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                {% for i in range(1, 8) %}
+                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                    <input type="radio" id="cooking_skills_{{ i }}" name="cooking_skills" value="{{ i }}" required>
+                                    <label for="cooking_skills_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rating-group correctness-details">
+                    <label>How often do you cook new recipes?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="new_recipe_frequency" name="new_recipe_frequency" required>
+                                 <option value="" selected disabled>Select an option</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rating-group correctness-details">
+                    <label>Which factors are important to you when deciding whether to try a recipe? (Select all that apply)</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <div class="checkbox-group">
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="clarity" name="recipe_factors" value="clarity">
+                                    <label for="clarity">Clear instructions</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="simplicity" name="recipe_factors" value="simplicity">
+                                    <label for="simplicity">Simple preparation</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="ingredients" name="recipe_factors" value="ingredients">
+                                    <label for="ingredients">Common ingredients I already have</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="nutritional" name="recipe_factors" value="nutritional">
+                                    <label for="nutritional">Nutritional value</label>
+                                </div>
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="appearance" name="recipe_factors" value="appearance">
+                                    <label for="appearance">How the final dish will look</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>How often do you use recipes to cook meals?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="recipe_usage_frequency" name="recipe_usage_frequency" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>How often do you cook meals at home?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="cooking_frequency" name="cooking_frequency" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>How much would you trust recipes created by human authors?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not at all</span>
+                                <div style="flex: 1;"></div>
+                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Completely</span>
+                            </div>
+                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                {% for i in range(1, 8) %}
+                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                    <input type="radio" id="trust_human_recipes_{{ i }}" name="trust_human_recipes" value="{{ i }}" required>
+                                    <label for="trust_human_recipes_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>Which AI provider would you choose for recipe generation? (Select Gemini. This is an attention check)</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="attention_check_post" name="attention_check_post" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="chatgpt">ChatGPT</option>
+                                <option value="claude">Claude</option>
+                                <option value="gemini">Gemini</option>
+                                <option value="copilot">Microsoft Copilot</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>How much would you trust recipes generated by AI tools (e.g., ChatGPT)?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <div style="display: flex; width: 100%; margin-bottom: 5px;">
+                                <span style="flex: 0 0 auto; text-align: left; width: 120px;">Not at all</span>
+                                <div style="flex: 1;"></div>
+                                <span style="flex: 0 0 auto; text-align: right; width: 120px;">Completely</span>
+                            </div>
+                            <div style="display: flex; width: 100%; justify-content: space-between; align-items: center;">
+                                {% for i in range(1, 8) %}
+                                <div class="rating-option" style="display: flex; flex-direction: column; align-items: center;">
+                                    <input type="radio" id="trust_ai_recipes_{{ i }}" name="trust_ai_recipes" value="{{ i }}" required>
+                                    <label for="trust_ai_recipes_{{ i }}" style="margin-top: 5px;">{{ i }}</label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>How often do you use AI to generate recipes?</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <select id="ai_recipe_usage" name="ai_recipe_usage" required>
+                                <option value="" selected disabled>Select an option</option>
+                                <option value="daily">Daily</option>
+                                <option value="several_times_week">Several times a week</option>
+                                <option value="once_week">About once a week</option>
+                                <option value="few_times_month">A few times a month</option>
+                                <option value="rarely">Rarely</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="rating-group correctness-details">
+                    <label>Any other comment you want to share with us? (Optional)</label>
+                    <div class="rating-scale">
+                        <div style="width: 100%;">
+                            <textarea id="comments" name="comments" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: center; align-items: center; margin-top: 32px;">
+                    <button type="submit" class="btn-primary">Continue</button>
+                </div>
+            </form>
+        </main>
+        <footer>
+            <p>© 2025 Recipe Feasibility Study</p>
+        </footer>
+    </div>
+</body>
+</html>

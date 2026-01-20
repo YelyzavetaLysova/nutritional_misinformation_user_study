@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demographics - Recipe Feasibility Study</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body>
+    <div class="mobile-container">
+        <header>
+            <h1>Demographics</h1>
+        </header>
+        <main>
+            <div class="progress-bar">
+                <div class="progress" style="width: 14%"></div>
+            </div>
+            <p class="progress-text">Step 1 of 7</p>
+            
+            <form action="/demographics" method="post" class="survey-form">
+                <div class="form-group">
+                    <label for="age">Age:</label>
+                    <select id="age" name="age" required>
+                        <option value="" selected disabled>Select your age range</option>
+                        <option value="18-24">18-24</option>
+                        <option value="25-34">25-34</option>
+                        <option value="35-44">35-44</option>
+                        <option value="45-54">45-54</option>
+                        <option value="55-64">55-64</option>
+                        <option value="65+">65 or older</option>
+                        <option value="other">Other</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender" required>
+                        <option value="" selected disabled>Select your gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="non_binary">Non-binary</option>
+                        <option value="other">Other</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="education">Education Level:</label>
+                    <select id="education" name="education" required>
+                        <option value="" selected disabled>Select your highest level of education</option>
+                        <option value="high_school">High school or equivalent</option>
+                        <option value="some_college">Some college/university</option>
+                        <option value="bachelors">Bachelor's degree</option>
+                        <option value="masters">Master's degree</option>
+                        <option value="doctoral">Doctoral degree</option>
+                        <option value="other">Other</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn-primary">Continue</button>
+            </form>
+        </main>
+        <footer>
+            <p>© 2025 Recipe Feasibility Study</p>
+        </footer>
+    </div>
+</body>
+</html>
